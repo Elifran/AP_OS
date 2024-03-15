@@ -1,11 +1,13 @@
 package aina.elifran.um5.ensam.ap_os;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,11 +43,12 @@ public class MenuFragment extends Fragment {
     private FloatingActionButton setting_button;
     private Button confirm_button;
     private Switch SW1,SW2,SW3,SW4,SW5;
-    private EditText RPM,POWER;
+    private EditText RPM,POWER,BEARING;
     private String mParam1;
     private String mParam2;
     private boolean[] SwitchValue = new boolean[5];
     private double rpmValue,powerValue;
+    private int bearingValue;
     private OnDataChangeListener mListener;
 
     public MenuFragment() {
@@ -70,17 +73,20 @@ public class MenuFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.menu_fragment, container, false);
+        // Obtenir une référence à l'activité hôte (MainActivity)
         return rootView;
     }
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        Activity activity = getActivity();
         menu_layout = (ViewGroup) view.findViewById(R.id.menu_layout);
         setting_button = view.findViewById(R.id.setting_button);
         confirm_button = view.findViewById(R.id.confirm_button);
 
         RPM = view.findViewById(R.id.velocity_value);
         POWER = view.findViewById(R.id.power_value);
+        BEARING = view.findViewById(R.id.bearing_value);
 
         SW1 = view.findViewById(R.id.switch1);
         SW2 = view.findViewById(R.id.switch2);
@@ -88,9 +94,11 @@ public class MenuFragment extends Fragment {
         SW4 = view.findViewById(R.id.switch4);
         SW5 = view.findViewById(R.id.switch5);
 
+        getData(activity);
         onClick();
         onChange();
         setConfiguration();
+
     }
     @Override
     public void onAttach(@NonNull Context context) {
@@ -135,20 +143,17 @@ public class MenuFragment extends Fragment {
         setting_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Remplacer FragmentA par FragmentB
-                BlankFragment blank_fragment = new BlankFragment();
-                FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-                transaction.replace(R.id.fragmentContainer, blank_fragment);
-                transaction.addToBackStack(null);  // Permet de revenir en arrière
-                transaction.commit();
+                closeSetting();
             }
         });
         confirm_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendData(new data("SWITCH",SwitchValue));
+                sendData(new data("BEARING",bearingValue));
                 sendData(new data("RPM",rpmValue));
                 sendData(new data("POWER",powerValue));
+                sendData(new data("SWITCH",SwitchValue));
+                closeSetting();
             }
         });
         SW1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -179,14 +184,75 @@ public class MenuFragment extends Fragment {
 
     }
     private void onChange() {
-        RPM.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        RPM.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+            @Override
+            public void afterTextChanged(Editable editable) {
+                String rpmText = RPM.getText().toString(); // Get the text entered in POWER view
+                if (!rpmText.isEmpty()) { // Check if the text is not empty
+                    try {
+                        rpmValue = Double.parseDouble(rpmText); // Convert text to float
+                    } catch (NumberFormatException e) {
+                        rpmValue = 0.0; // Convert text to float
+                    }
+                }
+            }
+        });
+        POWER.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+            @Override
+            public void afterTextChanged(Editable editable) {
+                String powerText = POWER.getText().toString(); // Get the text entered in POWER view
+                if (!powerText.isEmpty()) { // Check if the text is not empty
+                    try {
+                        powerValue = Double.parseDouble(powerText); // Convert text to float
+                    } catch (NumberFormatException e) {
+                        powerValue = 0.0;
+                    }
+                }
+            }
+        });
+        BEARING.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+            @Override
+            public void afterTextChanged(Editable editable) {
+                String bearingText = BEARING.getText().toString(); // Get the text entered in POWER view
+                if (!bearingText.isEmpty()) { // Check if the text is not empty
+                    try {
+                        bearingValue = Integer.parseInt(bearingText); // Convert text to float
+                    } catch (NumberFormatException e) {
+                        bearingValue = 0;
+                    }
+                }
+            }
+        });
+
+        /*RPM.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (!hasFocus) {
-                    String powerText = RPM.getText().toString(); // Get the text entered in POWER view
-                    if (!powerText.isEmpty()) { // Check if the text is not empty
+                    String rpmText = RPM.getText().toString(); // Get the text entered in POWER view
+                    if (!rpmText.isEmpty()) { // Check if the text is not empty
                         try {
-                            rpmValue = Double.parseDouble(powerText); // Convert text to float
+                            rpmValue = Double.parseDouble(rpmText); // Convert text to float
                         } catch (NumberFormatException e) {
                             rpmValue = 0.0; // Convert text to float
                         }
@@ -209,5 +275,46 @@ public class MenuFragment extends Fragment {
                 }
             }
         });
+        BEARING.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    String bearingText = BEARING.getText().toString(); // Get the text entered in POWER view
+                    if (!bearingText.isEmpty()) { // Check if the text is not empty
+                        try {
+                            bearingValue = Integer.parseInt(bearingText); // Convert text to float
+                        } catch (NumberFormatException e) {
+                            bearingValue = 0;
+                        }
+                    }
+                }
+            }
+        });*/
+    }
+    private void getData(Activity activity){
+        if(activity instanceof MainActivity){
+            MainActivity mainActivity = (MainActivity)activity;
+            SwitchValue =(boolean[]) mainActivity.getDataMain("SWITCH");
+                    SW1.setChecked(SwitchValue[0]);
+                    SW2.setChecked(SwitchValue[1]);
+                    SW3.setChecked(SwitchValue[2]);
+                    SW4.setChecked(SwitchValue[3]);
+                    SW5.setChecked(SwitchValue[4]);
+            rpmValue =(double) mainActivity.getDataMain("RPM");
+                    RPM.setText(String.valueOf(rpmValue));
+            powerValue =(double) mainActivity.getDataMain("POWER");
+                    POWER.setText(String.valueOf(powerValue));
+            bearingValue =(int) mainActivity.getDataMain("BEARING");
+                    BEARING.setText(String.valueOf(bearingValue));
+
+        }
+    }
+    private void closeSetting(){
+        // Remplacer le fragment
+        BlankFragment blank_fragment = new BlankFragment();
+        FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+                transaction.replace(R.id.fragmentContainer, blank_fragment);
+                transaction.addToBackStack("false");  // Permet de revenir en arrière
+                transaction.commit();
     }
 }

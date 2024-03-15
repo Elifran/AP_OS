@@ -58,7 +58,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private boolean flag = false, flag2 = false, s_flag, ready = false,filterStatus = false;
     private fft ffftdata;
     private boolean[] switchConfiguration;
-    private double rpmConfiguration,powerConfiguration;
+    private double rpmConfiguration = 1500 ,powerConfiguration = 15;
+    private int bearingConfiguration = 12;
 
     private double samplingfrequency;
     private double[][] maxfreq;
@@ -71,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Handler dofftHandler,doplotHandler,doprintHandler;
     private Handler mHideHandler = new Handler(Looper.myLooper());
 
+    private Bundle menu_bundle = new Bundle();
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -205,14 +207,37 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 case "RPM" :
                     rpmSetting((double)data.getValue());
                     break;
-                case "POWER":
+                case "POWER" :
                     powerSetting((double)data.getValue());
+                    break;
+                case "BEARING" :
+                    bearingSetting((int)data.getValue());
                     break;
                 default:
                     break;
             }
         }
-            Toast.makeText(getApplicationContext(),String.valueOf("Configuration saved"), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(),String.valueOf("Configuration saved") + bearingConfiguration +"*" + rpmConfiguration, Toast.LENGTH_SHORT).show();
+    }
+    public Object getDataMain(String Id){
+        Object Value = null;
+        switch (Id){
+            case "SWITCH" :
+                Value = switchConfiguration;
+                break;
+            case "RPM" :
+                Value = rpmConfiguration;
+                break;
+            case "POWER":
+                Value = powerConfiguration;
+                break;
+            case "BEARING":
+                Value = bearingConfiguration;
+                break;
+            default:
+                break;
+        }
+        return Value;
     }
     private void setupButton(){
         //resume button
@@ -515,18 +540,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     };
     private void switchSetting(boolean[] switchData){
         switchConfiguration = switchData.clone();
-
     }
-    private void rpmSetting(double rpmdata){
-
-        rpmConfiguration = rpmdata/60.0;
-
+    private void rpmSetting(double rpmData){
+        rpmConfiguration = rpmData;
     }
-    private void powerSetting(double powerdata){
-        powerConfiguration = powerdata * vibrationConstante;
+    private void powerSetting(double powerData){
+        powerConfiguration = powerData;
     }
-
-
+    private void bearingSetting(int bearingNumber){
+        bearingConfiguration = bearingNumber;
+    }
     private volatile Runnable dataAnalyse = new Runnable() {
         @Override
         public void run() {
@@ -535,7 +558,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             List<DataPoint> datafrequency2 = new ArrayList<>();
             double[][] data = data_fft_array.clone();
 
-            for( int i = 0; i<samplingfrequency + 1 ; i+= samplingfrequency/(rpmConfiguration)){
+            for( int i = 0; i<samplingfrequency + 1 ; i+= samplingfrequency*60/(rpmConfiguration)){
                 double[] TempData = getMaxAnalyse(data[0]);
                 datafrequency0.add(new DataPoint(TempData[0],data_fft_array[3][(int)TempData[1]]));
                 if((int)TempData[1] > 10)
@@ -543,7 +566,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 else
                     for (int j = 0;j<(int)TempData[1]+10;j++) data[0][j] = 1E-100;
             }
-            for( int i = 0; i<samplingfrequency + 1 ; i+= samplingfrequency/(rpmConfiguration)){
+            for( int i = 0; i<samplingfrequency + 1 ; i+= samplingfrequency*60/(rpmConfiguration)){
                 double[] TempData = getMaxAnalyse(data[0]);
                 datafrequency1.add(new DataPoint(TempData[0],data_fft_array[3][(int)TempData[1]]));
                 if((int)TempData[1] > 10)
@@ -551,7 +574,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 else
                     for (int j = 0;j<(int)TempData[1]+10;j++) data[0][j] = 1E-100;;
             }
-            for( int i = 0; i<samplingfrequency + 1 ; i+= samplingfrequency/(rpmConfiguration)){
+            for( int i = 0; i<samplingfrequency + 1 ; i+= samplingfrequency*60/(rpmConfiguration)){
                 double[] TempData = getMaxAnalyse(data[0]);
                 datafrequency2.add(new DataPoint(TempData[0],data_fft_array[3][(int)TempData[1]]));
                 if((int)TempData[1] > 10)
@@ -564,7 +587,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             // static analyse
             if(switchConfiguration[0]){     // static vibration unbalanced
                 for (int i = 0; i < datafrequency0.size(); i++) {
-                    if (Math.abs(datafrequency0.get(i).getY() - rpmConfiguration)  < 1.0) {
+                    if (Math.abs(datafrequency0.get(i).getY() - rpmConfiguration/60.0)  < 1.0) {
                         // there are static  default
 
                     }
@@ -572,7 +595,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
             if(switchConfiguration[1]){     //dynamic vibration unbalanced
                 for (int i = 0; i < datafrequency0.size(); i++) {
-                    if (Math.abs(datafrequency0.get(i).getY() - 2.0 * rpmConfiguration)  < 1.0) {
+                    if (Math.abs(datafrequency0.get(i).getY() - 2.0 * rpmConfiguration/60.0)  < 1.0) {
                         // there are dynamic default
 
                     }
@@ -592,7 +615,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
     };
-        public double[] getMaxAnalyse(@NonNull double[] data){
+    public double[] getMaxAnalyse(@NonNull double[] data){
             double max =-1.0E100;
             int pos = 0;
             for(int i = 0; i <data.length/2;i++){
@@ -603,6 +626,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
             return (new double[]{max,pos});
         }
+
+
 }
 
 
