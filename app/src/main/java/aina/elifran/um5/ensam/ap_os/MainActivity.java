@@ -60,7 +60,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private boolean[] switchConfiguration;
     private double rpmConfiguration = 1500 ,powerConfiguration = 15;
     private int bearingConfiguration = 12;
-
     private double samplingfrequency;
     private double[][] maxfreq;
     private filter Xfilterdata;
@@ -251,20 +250,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
             }
         });
-        //setting_button.setOnClickListener(new View.OnClickListener(){
-        //    public void onClick(View view) {
-        //        // Open the new activity here
-        //        //flag = false;   // stop the data operation process
-        //        //Intent intent = new Intent(MainActivity.this, acc_graphical.class); // Replace CurrentActivity and NewActivity with your actual activity names
-        //        //startActivity(intent);
-//
-        //        if(!menu_fragment.isAdded())
-        //            getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainer,menu_fragment).commit();
-        //        else if (!blank_fragment.isAdded())
-        //            getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainer,blank_fragment).commit();
-//
-        //    }
-        //});
+        setting_button.setOnClickListener(new View.OnClickListener(){
+            public void onClick(View view) {
+                //if(!menu_fragment.isAdded())
+                //    getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainer,menu_fragment).commit();
+                //else if (!blank_fragment.isAdded())
+                //    getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainer,blank_fragment).commit();
+                Toast.makeText(getApplicationContext(), "No Function Implemented Yet", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
     private void setupView(){
     }
