@@ -29,7 +29,6 @@ import com.androidplot.xy.PanZoom;
 import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYSeries;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
@@ -66,11 +65,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private filter Zfilterdata;
     private static final int filterOrder = 50;
     private static final double cutOffFrequency = 0.45; // must be less than 0.5
-
     private Handler dofftHandler,doplotHandler,doprintHandler;
-    private Handler mHideHandler = new Handler(Looper.myLooper());
-
-    private Bundle menu_bundle = new Bundle();
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         OutputSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        sensorManager.registerListener(this, OutputSensor, sensorManager.SENSOR_DELAY_FASTEST);
+        sensorManager.registerListener(this, OutputSensor, SensorManager.SENSOR_DELAY_FASTEST);
 
         setupView();
         setupButton();
@@ -128,9 +123,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         data_sensor_array[3][0] = step_time;
         last_timstamp = act_timstamp;
         if (ready){
-            data_sensor_array[0][0] =(float)(Xfilterdata.filterData((double)actSensorValues[0]));
-            data_sensor_array[1][0] =(float)(Yfilterdata.filterData((double)actSensorValues[1]));
-            data_sensor_array[2][0] =(float)(Zfilterdata.filterData((double)actSensorValues[2]));
+            data_sensor_array[0][0] =(float)(Xfilterdata.filterData(actSensorValues[0]));
+            data_sensor_array[1][0] =(float)(Yfilterdata.filterData(actSensorValues[1]));
+            data_sensor_array[2][0] =(float)(Zfilterdata.filterData(actSensorValues[2]));
             if(     (Xfilterdata.isConfigChange(samplingfrequency,cutOffFrequency*samplingfrequency) ||
                     Yfilterdata.isConfigChange(samplingfrequency,cutOffFrequency*samplingfrequency) ||
                     Xfilterdata.isConfigChange(samplingfrequency,cutOffFrequency*samplingfrequency) ) && flag){
@@ -192,6 +187,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         flag2 = false;
         setConfiguration();
 }
+
     // Implémenter la méthode onDataChanged pour modifier les données dans l'activité
     @Override
     public void onDataChanged(Object newData) {
@@ -215,7 +211,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     break;
             }
         }
-            Toast.makeText(getApplicationContext(),String.valueOf("Configuration saved") + bearingConfiguration +"*" + rpmConfiguration, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(),"Configuration Saved", Toast.LENGTH_SHORT).show();
     }
     public Object getDataMain(String Id){
         Object Value = null;
@@ -270,8 +266,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         ViewGroup.LayoutParams button_stop_params = button_stop.getLayoutParams();
         ViewGroup.LayoutParams button_param_params = button_param.getLayoutParams();
         ViewGroup.LayoutParams output_label_params = output_label.getLayoutParams();
-        ViewGroup.LayoutParams output_content_params = output_content.getLayoutParams();
-        ViewGroup.LayoutParams data_output_params = data_output.getLayoutParams();
         ViewGroup.LayoutParams data_output1_params = data_output1.getLayoutParams();
         ViewGroup.LayoutParams data_output_label_params = data_output_label.getLayoutParams();
 
@@ -377,7 +371,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         samplingfrequency = 1000*data_leingh/data_sensor_array[3][data_leingh-1];
     }
 
-    private volatile Runnable getfftAbs = new Runnable() {
+    private final Runnable  getfftAbs = new Runnable() {
         @Override
         public void run() {
             double resolution = samplingfrequency/data_leingh;
@@ -394,7 +388,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             maxfreq[2] = getMax(data_fft_array[2]);
         }
     };
-    private volatile Runnable data_plot = new Runnable() {
+    private final Runnable data_plot = new Runnable() {
         @Override
         public void run() {
             List<Number> times = new ArrayList<>();
@@ -450,7 +444,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             data_output.redraw(); // Refresh the plot
         }
     };
-    private volatile Runnable data_plot1 = new Runnable() {
+    private final Runnable data_plot1 = new Runnable() {
         @Override
         public void run() {
             List<DataPoint> xPoints = new ArrayList<>();
@@ -459,7 +453,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             List<DataPoint> xFftPoints = new ArrayList<>();
             List<DataPoint> yFftPoints = new ArrayList<>();
             List<DataPoint> zFftPoints = new ArrayList<>();
-            List<DataPoint> fftFrequencyPoints = new ArrayList<>();
 
             // Remplissez les listes de points à partir de vos tableaux de données
             for (int i = 0; i < data_leingh/2; i++) {
@@ -506,21 +499,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             data_output1.invalidate();
         }
     };
-    public volatile Runnable print_data = new Runnable() {
+    public final Runnable print_data = new Runnable() {
         @Override
         public void run() {
             OutputX.setText(String.valueOf(data_sensor_array[0][0]));
             OutputY.setText(String.valueOf(data_sensor_array[1][0]));
             OutputZ.setText(String.valueOf(data_sensor_array[2][0]));
             data_output_label.setText("");
-            for (String s : Arrays.asList(
-                    "X : f : " + maxfreq[0][1] + "Hz, v : " + maxfreq[0][0] + "dB" + "\n" +
-                    "Y : f : " + maxfreq[1][1] + "Hz, v : " + maxfreq[1][0] + "dB" + "\n" +
-                    "Z : f : " + maxfreq[2][1] + "Hz, v : " + maxfreq[2][0] + "dB" + "\n" +
-                    "Fe : " + samplingfrequency + "Hz"
-            )) {
-                data_output_label.append(s);
-            }
+            data_output_label.append(
+                        "X : f : " + maxfreq[0][1] + "Hz, v : " + maxfreq[0][0] + "dB" + "\n" +
+                        "Y : f : " + maxfreq[1][1] + "Hz, v : " + maxfreq[1][0] + "dB" + "\n" +
+                        "Z : f : " + maxfreq[2][1] + "Hz, v : " + maxfreq[2][0] + "dB" + "\n" +
+                        "Fe : " + samplingfrequency + "Hz");
             if (!flag2) {
                 setConfiguration();
                 flag2 = true;
@@ -543,7 +533,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void bearingSetting(int bearingNumber){
         bearingConfiguration = bearingNumber;
     }
-    private volatile Runnable dataAnalyse = new Runnable() {
+    private final Runnable dataAnalyse = new Runnable() {
         @Override
         public void run() {
             List<DataPoint> datafrequency0 = new ArrayList<>();
@@ -551,7 +541,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             List<DataPoint> datafrequency2 = new ArrayList<>();
             double[][] data = data_fft_array.clone();
 
-            for( int i = 0; i<samplingfrequency + 1 ; i+= samplingfrequency*60/(rpmConfiguration)){
+            for( int i = 0; i<samplingfrequency + 1 ; i+= (int) (samplingfrequency*60/rpmConfiguration)){
                 double[] TempData = getMaxAnalyse(data[0]);
                 datafrequency0.add(new DataPoint(TempData[0],data_fft_array[3][(int)TempData[1]]));
                 if((int)TempData[1] > 10)
@@ -559,23 +549,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 else
                     for (int j = 0;j<(int)TempData[1]+10;j++) data[0][j] = 1E-100;
             }
-            for( int i = 0; i<samplingfrequency + 1 ; i+= samplingfrequency*60/(rpmConfiguration)){
+            for( int i = 0; i<samplingfrequency + 1 ; i+= (int) (samplingfrequency*60/rpmConfiguration)){
                 double[] TempData = getMaxAnalyse(data[0]);
                 datafrequency1.add(new DataPoint(TempData[0],data_fft_array[3][(int)TempData[1]]));
                 if((int)TempData[1] > 10)
                     for (int j = (int)TempData[1]-10;j<(int)TempData[1]+10;j++) data[1][j] = 1E-100;
                 else
-                    for (int j = 0;j<(int)TempData[1]+10;j++) data[0][j] = 1E-100;;
+                    for (int j = 0;j<(int)TempData[1]+10;j++) data[0][j] = 1E-100;
             }
-            for( int i = 0; i<samplingfrequency + 1 ; i+= samplingfrequency*60/(rpmConfiguration)){
+            for( int i = 0; i<samplingfrequency + 1 ; i+= (int) (samplingfrequency*60/rpmConfiguration)){
                 double[] TempData = getMaxAnalyse(data[0]);
                 datafrequency2.add(new DataPoint(TempData[0],data_fft_array[3][(int)TempData[1]]));
                 if((int)TempData[1] > 10)
                     for (int j = (int)TempData[1]-10;j<(int)TempData[1]+10;j++) data[0][j] = 1E-100;
                 else
-                    for (int j = 0;j<(int)TempData[1]+10;j++) data[2][j] = 1E-100;;
+                    for (int j = 0;j<(int)TempData[1]+10;j++) data[2][j] = 1E-100;
             }
-
 
             // static analyse
             if(switchConfiguration[0]){     // static vibration unbalanced
