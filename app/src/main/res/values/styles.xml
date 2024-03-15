@@ -1,0 +1,10 @@
+<resources>
+
+    <style name="Widget.Theme.AP_OS.ActionBar.Fullscreen" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:background">@color/purple_700</item>
+    </style>
+
+    <style name="Widget.Theme.AP_OS.ButtonBar.Fullscreen" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:background">@color/purple_700</item>
+    </style>
+</resources>

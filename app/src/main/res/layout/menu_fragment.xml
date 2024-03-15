@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".MenuFragment">
+
+    <RelativeLayout
+
+        android:id="@+id/menu_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center|center_vertical"
+        android:orientation="vertical">
+        <!-- TODO: Update blank fragment layout -->
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/setting_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="10dp"
+            android:src="@mipmap/logo"
+            app:fabSize="mini"
+            android:onClick=""
+            tools:ignore="OnClick" />
+
+        <LinearLayout
+            android:id="@+id/setting_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/setting_button"
+            android:layout_toEndOf="@+id/setting_button"
+            android:layout_toRightOf="@+id/setting_button"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="What are We analyse for? Select : " />
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/check1_lablel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_toStartOf="@+id/switch1"
+                    android:layout_toLeftOf="@+id/switch1"
+                    android:gravity="left"
+                    android:text="Static Unbalanced" />
+
+                <Switch
+                    android:id="@+id/switch1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+                <TextView
+                    android:id="@+id/check2_lablel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/switch1"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_toStartOf="@+id/switch2"
+                    android:layout_toLeftOf="@+id/switch2"
+                    android:gravity="left"
+                    android:text="Dynamic Unbalanced" />
+
+                <Switch
+                    android:id="@+id/switch2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/switch1"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_weight="1"
+                    tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+                <TextView
+                    android:id="@+id/check3_lablel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/switch2"
+
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_toStartOf="@+id/switch3"
+                    android:layout_toLeftOf="@+id/switch3"
+                    android:gravity="left"
+                    android:text="Mechanical Loosness" />
+
+                <Switch
+                    android:id="@+id/switch3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/switch2"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_weight="1"
+                    tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+                <TextView
+                    android:id="@+id/check4_lablel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/switch3"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_toStartOf="@+id/switch4"
+                    android:layout_toLeftOf="@+id/switch4"
+                    android:gravity="left"
+                    android:text="Bearing Faults" />
+
+                <Switch
+                    android:id="@+id/switch4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/switch3"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_weight="1"
+                    tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+                <TextView
+                    android:id="@+id/check5_lablel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/switch4"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_toStartOf="@+id/switch5"
+                    android:layout_toLeftOf="@+id/switch5"
+                    android:gravity="left"
+                    android:text="Magnetical/Mecanical default" />
+
+                <Switch
+                    android:id="@+id/switch5"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/switch4"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_weight="1"
+                    tools:ignore="UseSwitchCompatOrMaterialXml" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/power"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/powerLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/power_value"
+                    android:layout_alignTop="@+id/power_value"
+                    android:gravity="center"
+                    android:text="The machine Power"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentLeft="true"
+                    />
+
+                <EditText
+                    android:id="@+id/power_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toEndOf="@+id/powerLabel"
+                    android:layout_toRightOf="@+id/powerLabel"
+                    android:layout_toStartOf="@+id/powerIndice"
+                    android:layout_toLeftOf="@+id/powerIndice"
+                    android:inputType="numberDecimal"
+                    />
+                <TextView
+                    android:id="@+id/powerIndice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/power_value"
+                    android:layout_alignTop="@+id/power_value"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:gravity="center"
+                    android:text="[kW]           "/>
+
+            </RelativeLayout>
+            <RelativeLayout
+                android:id="@+id/velocity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/velocityLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/velocity_value"
+                    android:layout_alignTop="@+id/velocity_value"
+                    android:gravity="center"
+                    android:text="Machine RPM           "
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentLeft="true"
+                    />
+
+                <EditText
+                    android:id="@+id/velocity_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toEndOf="@+id/velocityLabel"
+                    android:layout_toRightOf="@+id/velocityLabel"
+                    android:layout_toStartOf="@+id/velocityIndice"
+                    android:layout_toLeftOf="@+id/velocityIndice"
+                    android:inputType="numberDecimal"
+                    />
+                <TextView
+                    android:id="@+id/velocityIndice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/velocity_value"
+                    android:layout_alignTop="@+id/velocity_value"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:gravity="center"
+                    android:text="[RPM]        "/>
+
+            </RelativeLayout>
+            <RelativeLayout
+                android:id="@+id/bearing"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/bearingLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/bearing_value"
+                    android:layout_alignTop="@+id/bearing_value"
+                    android:gravity="center"
+                    android:text="bearing Number       "
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentLeft="true"
+                    />
+
+                <EditText
+                    android:id="@+id/bearing_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toEndOf="@+id/bearingLabel"
+                    android:layout_toRightOf="@+id/bearingLabel"
+                    android:layout_toStartOf="@+id/bearingIndice"
+                    android:layout_toLeftOf="@+id/bearingIndice"
+                    android:inputType="number"
+                    />
+                <TextView
+                    android:id="@+id/bearingIndice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/bearing_value"
+                    android:layout_alignTop="@+id/bearing_value"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:gravity="center"
+                    android:text="[NUMBER]"/>
+
+            </RelativeLayout>
+        </LinearLayout>
+        <TextView
+            android:id="@+id/confirm_button_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/setting_switch"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_centerHorizontal="true"
+            android:gravity="center"
+            android:text="\n Save and apply setting " />
+        <Button
+            android:id="@+id/confirm_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/confirm_button_label"
+            android:layout_gravity="bottom"
+            android:text="CONFIRM" />
+
+
+    </RelativeLayout>
+</FrameLayout>
