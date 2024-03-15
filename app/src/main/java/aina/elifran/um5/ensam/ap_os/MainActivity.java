@@ -43,7 +43,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private final double vibrationConstante = 0.285;
     private TextView OutputX, OutputY, OutputZ,data_output_label;
     private Button button_stop,button_param;
-    private FloatingActionButton setting_button;
     private GraphView data_output1;
     private XYPlot data_output;
     private ViewGroup control_layout,chart_layout,output_control_values_layout,command_layout,output_label,output_content;
@@ -250,7 +249,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
             }
         });
-        setting_button.setOnClickListener(new View.OnClickListener(){
+        button_param.setOnClickListener(new View.OnClickListener(){
             public void onClick(View view) {
                 //if(!menu_fragment.isAdded())
                 //    getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainer,menu_fragment).commit();
