@@ -444,16 +444,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             List<DataPoint> fftFrequencyPoints = new ArrayList<>();
 
             // Remplissez les listes de points à partir de vos tableaux de données
-            for (int i = 0; i < data_leingh; i++) {
-                xPoints.add(new DataPoint(data_fft_array[3][i], data_sensor_array[0][i]));
-                yPoints.add(new DataPoint(data_fft_array[3][i], data_sensor_array[1][i]));
-                zPoints.add(new DataPoint(data_fft_array[3][i], data_sensor_array[2][i]));
+            for (int i = 0; i < data_leingh/2; i++) {
+                xPoints.add(new DataPoint(data_fft_array[3][i], data_sensor_array[0][i*2]));
+                yPoints.add(new DataPoint(data_fft_array[3][i], data_sensor_array[1][i*2]));
+                zPoints.add(new DataPoint(data_fft_array[3][i], data_sensor_array[2][i*2]));
 
             }
             for (int i = 0; i < data_leingh / 2; i++) {
-                xFftPoints.add(new DataPoint(data_fft_array[3][i*2], data_fft_array[0][i]));
-                yFftPoints.add(new DataPoint(data_fft_array[3][i*2], data_fft_array[1][i]));
-                zFftPoints.add(new DataPoint(data_fft_array[3][i*2], data_fft_array[2][i]));
+                xFftPoints.add(new DataPoint(data_fft_array[3][i], data_fft_array[0][i]));
+                yFftPoints.add(new DataPoint(data_fft_array[3][i], data_fft_array[1][i]));
+                zFftPoints.add(new DataPoint(data_fft_array[3][i], data_fft_array[2][i]));
             }
 
             LineGraphSeries<DataPoint> xSeries = new LineGraphSeries<>(xPoints.toArray(new DataPoint[0]));
