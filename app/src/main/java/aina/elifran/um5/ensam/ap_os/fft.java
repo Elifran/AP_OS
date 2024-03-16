@@ -12,21 +12,18 @@ import androidx.annotation.NonNull;
 
 
 public class fft {
-    private static int length_data; //data length
-    private static int[] BitReversData;
-    private static double[] DataReversData;
-    private static Complex[][] fftCoefficient;
-    private static int log2_data;
-    private static double[] data_input;
-    private static Complex[] data_Output_Complex;
-    private static double[] data_Output_Abs;
-    private static double[] data_Output_Abs_Shift;
-    private static double[] data_Output_Abs_Log;
-    private static double[] data_Output_Abs_Log_Shift;
-
-
-
-    private static Handler fft_handler;
+    private  int length_data; //data length
+    private  int[] BitReversData;
+    private  double[] DataReversData;
+    private  Complex[][] fftCoefficient;
+    private  int log2_data;
+    private  double[] data_input;
+    private  Complex[] data_Output_Complex;
+    private  double[] data_Output_Abs;
+    private  double[] data_Output_Abs_Shift;
+    private  double[] data_Output_Abs_Log;
+    private  double[] data_Output_Abs_Log_Shift;
+    private  Handler fft_handler;
     public fft(int length) {
         fft_handler = new Handler(Looper.myLooper());
         log2_data = (int)(Math.abs(Math.log(length) / Math.log(2)));
@@ -34,45 +31,45 @@ public class fft {
         DataReversData = new double[length];
         BitReversData = new int[length_data];
         fftCoefficient = new Complex[log2_data][length_data];
+        data_input = new double[length_data];
 
         bitrevers();
         getFftCoefficient();
     }
 
-    public static final Runnable getLogfft = new Runnable() {
+    public  final Runnable getLogfft = new Runnable() {
         @Override
         public void run() {
             data_Output_Abs_Log = getLogtfft(data_input);
         }
     };
-    public static final Runnable getLogShifttfft = new Runnable() {
+    public  final Runnable getLogShifttfft = new Runnable() {
         @Override
         public void run() {
             data_Output_Abs_Log_Shift = getLogShifttfft(data_input);
         }
     };
-    public static final Runnable fftShift = new Runnable() {
+    public  final Runnable fftShift = new Runnable() {
         @Override
         public void run() {
             data_Output_Abs_Shift = fftShift(data_input);
         }
     };
-    public static final Runnable getAbsfft = new Runnable() {
+    public  final Runnable getAbsfft = new Runnable() {
         @Override
         public void run() {
             data_Output_Abs = getAbsfft(data_input);
         }
     };
-    public static final Runnable getfft = new Runnable() {
+    public  final Runnable getfft = new Runnable() {
         @Override
         public void run() {
             data_Output_Complex = getfft(data_input);
         }
     };
 
-
     @NonNull
-    public static double[] getLogtfft(double data[]){
+    public  double[] getLogtfft(double data[]){
         double[] data_norm = getAbsfft(data);
         for (int i = 0; i<length_data;i++){
             data_norm[i] = 20*Math.log(data_norm[i]);
@@ -80,7 +77,7 @@ public class fft {
         return data_norm;
     }
     @NonNull
-    public static double[] getLogShifttfft(double data[]){
+    public  double[] getLogShifttfft(double data[]){
         double[] data_norm = fftShift(data);
         for (int i = 0; i<length_data;i++){
             data_norm[i] = 20*Math.log(data_norm[i]);
@@ -88,7 +85,7 @@ public class fft {
         return data_norm;
     }
     @NonNull
-    public static double[] fftShift(double data[]){
+    public  double[] fftShift(double data[]){
         double[] shifted = getAbsfft(data);
         double[] shifteddata = shifted.clone();
         for (int i = 0; i<length_data/2;i++){
@@ -100,7 +97,7 @@ public class fft {
         return shifteddata;
     }
     @NonNull
-    public static double[] getAbsfft(double data[]){
+    public  double[] getAbsfft(double data[]){
        Complex[] absfft = new Complex[length_data];
         double[] dataOut = new double[length_data];
         absfft = getfft(data);
@@ -110,7 +107,7 @@ public class fft {
         return dataOut;
     }
     @NonNull
-    public static Complex[] getfft(double data[]){
+    public  Complex[] getfft(double data[]){
         datarevers(data);
         Complex[][] tempo_data = new Complex[log2_data + 1][length_data];
         for (int i = 0; i<length_data; i++){
@@ -127,25 +124,23 @@ public class fft {
             }
         return tempo_data[log2_data];
     }
-
-
-    private static void getFftCoefficient(){
+    private  void getFftCoefficient(){
         for (int i = 0; i<log2_data;i++){
             for (int k = 0; k<length_data;k++){
                 fftCoefficient[i][k] = Complex.exponential(-(2*Math.PI*k)/(pow(2,(i+1))));
             }
         }
     }
-    private static double[] datarevers(double[] data){
+    private  double[] datarevers(double[] data){
             for (int i = 0; i<length_data - 1; i+=2){
                 DataReversData[i]  = data[BitReversData[i]];
             }
             return DataReversData;
     }
-    private static void bitrevers(){
+    private  void bitrevers(){
         BitReversData = bitrevers(length_data);
     }
-    private static int[] bitrevers(int length){
+    private  int[] bitrevers(int length){
         double log2 = Math.abs(Math.log(length) / Math.log(2));
         int[] array = new int[length];
         if (log2 - (int)(log2) > 1e-10) {
@@ -158,7 +153,7 @@ public class fft {
         }
         return array;
     }
-    private static int bitrevers(int data, int numBits) {
+    private int bitrevers(int data, int numBits) {
         int reversedData = 0;
         for (int i = 0; i < numBits; i++) {
             int leftBit = (data >> i) & 1; // Get the bit at position i from the left

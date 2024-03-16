@@ -17,6 +17,7 @@ public class dataAnalyse {
     private double[] dataMesureArray;
     private long[] dataTimeArray;
     private int data_buffer;
+    private boolean analyseStatus = false;
     long counter;
     dataAnalyse(int buffer, double sampling_frequency, double rpm_Configuration,double power_Configuration, int bearing_Configuration , boolean[] switch_Configuration){
         data_buffer = buffer;
@@ -32,9 +33,15 @@ public class dataAnalyse {
         dataTimeArray = new long[data_buffer];
 
     }
-    public void beginAnalyse(){
-    }
+    public boolean beginAnalyse(){
+        boolean analysePossible;
+        if (counter > data_buffer)
+            analysePossible = true;
+        else
+            analysePossible = false;
 
+        return analysePossible;
+    }
     public void addData(double data, long time){
         shiftRight(dataMesureArray,dataTimeArray,data,time);
         counter++;      // counte any data
