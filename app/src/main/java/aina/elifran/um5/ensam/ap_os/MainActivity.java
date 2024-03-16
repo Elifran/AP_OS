@@ -131,11 +131,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     Xfilterdata.isConfigChange(samplingfrequency,cutOffFrequency*samplingfrequency) ) && flag){
                 Toast.makeText(getApplicationContext(), "Configuration filter Have been Changed", Toast.LENGTH_LONG).show();
             }
-        }else {
+        }
+        else {
             data_sensor_array[0][0] =event.values[0];
             data_sensor_array[1][0] =event.values[1];
             data_sensor_array[2][0] =event.values[2];
-            {
                 if(couter > data_leingh*2 + 1){
                     if(!filterStatus){
                         Xfilterdata = new filter(filterOrder,samplingfrequency,cutOffFrequency*samplingfrequency);
@@ -150,7 +150,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 else {
                     couter++;
                 }
-            }
         }
         if(data_couter > data_leingh/256 ) {
             if (flag && ready) {

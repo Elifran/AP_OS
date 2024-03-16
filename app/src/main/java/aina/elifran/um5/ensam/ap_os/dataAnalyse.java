@@ -1,6 +1,7 @@
-package aina.elifran.um5.ensam.ap_os.placeholder;
+package aina.elifran.um5.ensam.ap_os;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.jjoe64.graphview.series.DataPoint;
 
@@ -11,6 +12,7 @@ import java.util.List;
 
 public class dataAnalyse {
     private double samplingFrequency,rpmConfiguration,powerConfiguration;
+    private final double powerCoefficient = 0.142;  // the vibration amplitude coefficient
     private int bearingConfiguration;
     private boolean[] switchConfiguration;
     private double[] dataFftArray;
@@ -18,8 +20,15 @@ public class dataAnalyse {
     private long[] dataTimeArray;
     private int data_buffer;
     private boolean analyseStatus = false;
+    private fft dataAnalyseFft;
     long counter;
-    dataAnalyse(int buffer, double sampling_frequency, double rpm_Configuration,double power_Configuration, int bearing_Configuration , boolean[] switch_Configuration){
+    dataAnalyse(@NonNull int buffer,
+                @NonNull double sampling_frequency,
+                @NonNull double rpm_Configuration,
+                @NonNull double power_Configuration,
+                @NonNull int bearing_Configuration ,
+                @Nullable boolean[] switch_Configuration)
+    {
         data_buffer = buffer;
         samplingFrequency = sampling_frequency;
         rpmConfiguration = rpm_Configuration;
@@ -31,37 +40,42 @@ public class dataAnalyse {
         dataMesureArray = new double[data_buffer];
         dataFftArray = new double[data_buffer];
         dataTimeArray = new long[data_buffer];
+        dataAnalyseFft = new fft(data_buffer);
 
+    }
+    public void addData(double data, long timeStamp) // insert data to the buffer befor analyse
+    {
+        shiftRight(dataMesureArray,dataTimeArray,data,timeStamp);
+        counter++;      // counte any data
     }
     public boolean beginAnalyse(){
         boolean analysePossible;
-        if (counter > data_buffer)
+        if (counter > data_buffer){
+            dataFftArray = dataAnalyseFft.getAbsfft(dataMesureArray.clone()); // get the absolute value of the fft
             analysePossible = true;
+        }
         else
             analysePossible = false;
-
         return analysePossible;
     }
-    public void addData(double data, long time){
-        shiftRight(dataMesureArray,dataTimeArray,data,time);
-        counter++;      // counte any data
-    }
-    private void shiftRight(@NonNull double[] dataArray , long[] time, double dataIn , long timestamp){
+
+    private void shiftRight(@NonNull double[] dataArray , long[] arrayTime, double dataIn , long timestamp){
         for (int i = data_buffer - 1; i > 0; i--){
             dataArray[i] = dataArray[i-1];
-            time[i] = time[i-1] + timestamp;
+            arrayTime[i] = arrayTime[i-1] + timestamp;
         }
-        time[0] = 0;
+        arrayTime[0] = 0;
+        dataArray[0] = dataIn;
     }
     private final Runnable dataAnalyse = new Runnable() {
         @Override
         public void run() {
-            List<DataPoint> datafrequency0 = new ArrayList<>();
+            List<DataPoint> dataFrequency = new ArrayList<>();
             double[] data = dataFftArray.clone();
 
             for( int i = 0; i<samplingFrequency + 1 ; i+= (int) (samplingFrequency*60/rpmConfiguration)){
                 double[] TempData = getMaxAnalyse(data);
-                datafrequency0.add(new DataPoint(TempData[0],dataFftArray[(int)TempData[1]]));
+                dataFrequency.add(new DataPoint(TempData[0],dataFftArray[(int)TempData[1]]));
                 if((int)TempData[1] > 10)
                     for (int j = (int)TempData[1]-10;j<(int)TempData[1]+10;j++) data[j] = 1E-100;
                 else
@@ -69,16 +83,16 @@ public class dataAnalyse {
             }
             // static analyse
             if(switchConfiguration[0]){     // static vibration unbalanced
-                for (int i = 0; i < datafrequency0.size(); i++) {
-                    if (Math.abs(datafrequency0.get(i).getY() - rpmConfiguration/60.0)  < 1.0) {
+                for (int i = 0; i < dataFrequency.size(); i++) {
+                    if (Math.abs(dataFrequency.get(i).getY() - rpmConfiguration/60.0)  < 1.0) {
                         // there are static  default
 
                     }
                 }
             }
             if(switchConfiguration[1]){     //dynamic vibration unbalanced
-                for (int i = 0; i < datafrequency0.size(); i++) {
-                    if (Math.abs(datafrequency0.get(i).getY() - 2.0 * rpmConfiguration/60.0)  < 1.0) {
+                for (int i = 0; i < dataFrequency.size(); i++) {
+                    if (Math.abs(dataFrequency.get(i).getY() - 2.0 * rpmConfiguration/60.0)  < 1.0) {
                         // there are dynamic default
 
                     }
@@ -88,8 +102,8 @@ public class dataAnalyse {
             if(switchConfiguration[3]){     //bearing fault
             }
             if(switchConfiguration[4]){     //electrical or mecanical default
-                for (int i = 0; i < datafrequency0.size(); i++) {
-                    if (Math.abs(datafrequency0.get(i).getY() - 100.0)  < 0.1) {
+                for (int i = 0; i < dataFrequency.size(); i++) {
+                    if (Math.abs(dataFrequency.get(i).getY() - 100.0)  < 0.1) {
                         // there are electrical default
 
                     }
