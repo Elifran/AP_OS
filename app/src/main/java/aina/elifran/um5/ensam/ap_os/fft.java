@@ -1,18 +1,14 @@
 package aina.elifran.um5.ensam.ap_os;
 import static java.lang.Math.pow;
 import java.lang.Math;
-
-import android.os.Build;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.MotionEvent;
 
 import androidx.annotation.NonNull;
 
 
 public class fft {
-    private  int length_data; //data length
+    private  final int length_data; //data length
     private  int[] BitReversData;
     private  double[] DataReversData;
     private  Complex[][] fftCoefficient;
