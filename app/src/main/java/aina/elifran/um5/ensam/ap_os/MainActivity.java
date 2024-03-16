@@ -370,7 +370,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         array[3][0] = 0;
         samplingfrequency = 1000*data_leingh/data_sensor_array[3][data_leingh-1];
     }
-
     private final Runnable  getfftAbs = new Runnable() {
         @Override
         public void run() {
@@ -386,62 +385,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             maxfreq[0] = getMax(data_fft_array[0]);
             maxfreq[1] = getMax(data_fft_array[1]);
             maxfreq[2] = getMax(data_fft_array[2]);
-        }
-    };
-    private final Runnable data_plot = new Runnable() {
-        @Override
-        public void run() {
-            List<Number> times = new ArrayList<>();
-            List<Number> xValues = new ArrayList<>();
-            List<Number> yValues = new ArrayList<>();
-            List<Number> zValues = new ArrayList<>();
-            List<Number> xfftValues = new ArrayList<>();
-            List<Number> yfftValues = new ArrayList<>();
-            List<Number> zfftValues = new ArrayList<>();
-            List<Number> fftfrequency = new ArrayList<>();
-            // Populate xValues and yValues from your data_sensor_array
-            for (int i = 0; i < data_leingh; i++) {
-
-                xValues.add(data_sensor_array[0][i]); // output x
-                yValues.add(data_sensor_array[1][i]); // output y
-                zValues.add(data_sensor_array[2][i]); // output z
-                times.add(data_sensor_array[3][i]); // time
-
-            }
-            for (int i = 0; i < data_leingh / 2; i++) {
-                xfftValues.add(data_fft_array[0][i]); // output fft
-                yfftValues.add(data_fft_array[1][i]); // output fft
-                zfftValues.add(data_fft_array[2][i]); // output fft
-                //fftfrequency.add(data_fft_array[3][i*2]); // output fft frequency
-                fftfrequency.add(data_sensor_array[3][i * 2]); // output fft frequency
-            }
-            XYSeries Xseries = new SimpleXYSeries(times, xValues, ""/*"Output x"*/);
-            XYSeries Yseries = new SimpleXYSeries(times, yValues, ""/*"Output y"*/);
-            XYSeries Zseries = new SimpleXYSeries(times, zValues, ""/*"Output z"*/);
-            LineAndPointFormatter Xformatter = new LineAndPointFormatter(Color.BLUE, null, null, null);
-            LineAndPointFormatter Yformatter = new LineAndPointFormatter(Color.RED, null, null, null);
-            LineAndPointFormatter Zformatter = new LineAndPointFormatter(Color.BLACK, null, null, null);
-
-            XYSeries xFFTseries = new SimpleXYSeries(fftfrequency, xfftValues, ""/*"Output x"*/);
-            XYSeries yFFTseries = new SimpleXYSeries(fftfrequency, yfftValues, ""/*"Output y"*/);
-            XYSeries zFFTseries = new SimpleXYSeries(fftfrequency, zfftValues, ""/*"Output z"*/);
-            LineAndPointFormatter xFFTformatter = new LineAndPointFormatter(Color.BLUE, null, null, null);
-            LineAndPointFormatter yFFTformatter = new LineAndPointFormatter(Color.RED, null, null, null);
-            LineAndPointFormatter zFFTformatter = new LineAndPointFormatter(Color.BLACK, null, null, null);
-
-            data_output.clear();        // clear the output data
-//1
-            data_output.addSeries(xFFTseries, xFFTformatter);
-            data_output.addSeries(yFFTseries, yFFTformatter);
-            data_output.addSeries(zFFTseries, zFFTformatter);
-            data_output.addSeries(Xseries, Xformatter);
-            data_output.addSeries(Yseries, Yformatter);
-            data_output.addSeries(Zseries, Zformatter);
-            data_output.setRangeBoundaries(-150, 20, BoundaryMode.FIXED);
-            PanZoom.attach(data_output, PanZoom.Pan.BOTH, PanZoom.Zoom.STRETCH_BOTH);
-            // Assuming data_output is your XYPlot object
-//
-            data_output.redraw(); // Refresh the plot
         }
     };
     private final Runnable data_plot1 = new Runnable() {
@@ -533,83 +476,76 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void bearingSetting(int bearingNumber){
         bearingConfiguration = bearingNumber;
     }
-    private final Runnable dataAnalyse = new Runnable() {
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // no usag function
+    private final Runnable data_plot = new Runnable() {
         @Override
         public void run() {
-            List<DataPoint> datafrequency0 = new ArrayList<>();
-            List<DataPoint> datafrequency1 = new ArrayList<>();
-            List<DataPoint> datafrequency2 = new ArrayList<>();
-            double[][] data = data_fft_array.clone();
+            List<Number> times = new ArrayList<>();
+            List<Number> xValues = new ArrayList<>();
+            List<Number> yValues = new ArrayList<>();
+            List<Number> zValues = new ArrayList<>();
+            List<Number> xfftValues = new ArrayList<>();
+            List<Number> yfftValues = new ArrayList<>();
+            List<Number> zfftValues = new ArrayList<>();
+            List<Number> fftfrequency = new ArrayList<>();
+            // Populate xValues and yValues from your data_sensor_array
+            for (int i = 0; i < data_leingh; i++) {
 
-            for( int i = 0; i<samplingfrequency + 1 ; i+= (int) (samplingfrequency*60/rpmConfiguration)){
-                double[] TempData = getMaxAnalyse(data[0]);
-                datafrequency0.add(new DataPoint(TempData[0],data_fft_array[3][(int)TempData[1]]));
-                if((int)TempData[1] > 10)
-                    for (int j = (int)TempData[1]-10;j<(int)TempData[1]+10;j++) data[0][j] = 1E-100;
-                else
-                    for (int j = 0;j<(int)TempData[1]+10;j++) data[0][j] = 1E-100;
-            }
-            for( int i = 0; i<samplingfrequency + 1 ; i+= (int) (samplingfrequency*60/rpmConfiguration)){
-                double[] TempData = getMaxAnalyse(data[0]);
-                datafrequency1.add(new DataPoint(TempData[0],data_fft_array[3][(int)TempData[1]]));
-                if((int)TempData[1] > 10)
-                    for (int j = (int)TempData[1]-10;j<(int)TempData[1]+10;j++) data[1][j] = 1E-100;
-                else
-                    for (int j = 0;j<(int)TempData[1]+10;j++) data[0][j] = 1E-100;
-            }
-            for( int i = 0; i<samplingfrequency + 1 ; i+= (int) (samplingfrequency*60/rpmConfiguration)){
-                double[] TempData = getMaxAnalyse(data[0]);
-                datafrequency2.add(new DataPoint(TempData[0],data_fft_array[3][(int)TempData[1]]));
-                if((int)TempData[1] > 10)
-                    for (int j = (int)TempData[1]-10;j<(int)TempData[1]+10;j++) data[0][j] = 1E-100;
-                else
-                    for (int j = 0;j<(int)TempData[1]+10;j++) data[2][j] = 1E-100;
-            }
+                xValues.add(data_sensor_array[0][i]); // output x
+                yValues.add(data_sensor_array[1][i]); // output y
+                zValues.add(data_sensor_array[2][i]); // output z
+                times.add(data_sensor_array[3][i]); // time
 
-            // static analyse
-            if(switchConfiguration[0]){     // static vibration unbalanced
-                for (int i = 0; i < datafrequency0.size(); i++) {
-                    if (Math.abs(datafrequency0.get(i).getY() - rpmConfiguration/60.0)  < 1.0) {
-                        // there are static  default
+            }
+            for (int i = 0; i < data_leingh / 2; i++) {
+                xfftValues.add(data_fft_array[0][i]); // output fft
+                yfftValues.add(data_fft_array[1][i]); // output fft
+                zfftValues.add(data_fft_array[2][i]); // output fft
+                //fftfrequency.add(data_fft_array[3][i*2]); // output fft frequency
+                fftfrequency.add(data_sensor_array[3][i * 2]); // output fft frequency
+            }
+            XYSeries Xseries = new SimpleXYSeries(times, xValues, ""/*"Output x"*/);
+            XYSeries Yseries = new SimpleXYSeries(times, yValues, ""/*"Output y"*/);
+            XYSeries Zseries = new SimpleXYSeries(times, zValues, ""/*"Output z"*/);
+            LineAndPointFormatter Xformatter = new LineAndPointFormatter(Color.BLUE, null, null, null);
+            LineAndPointFormatter Yformatter = new LineAndPointFormatter(Color.RED, null, null, null);
+            LineAndPointFormatter Zformatter = new LineAndPointFormatter(Color.BLACK, null, null, null);
 
-                    }
-                }
-            }
-            if(switchConfiguration[1]){     //dynamic vibration unbalanced
-                for (int i = 0; i < datafrequency0.size(); i++) {
-                    if (Math.abs(datafrequency0.get(i).getY() - 2.0 * rpmConfiguration/60.0)  < 1.0) {
-                        // there are dynamic default
+            XYSeries xFFTseries = new SimpleXYSeries(fftfrequency, xfftValues, ""/*"Output x"*/);
+            XYSeries yFFTseries = new SimpleXYSeries(fftfrequency, yfftValues, ""/*"Output y"*/);
+            XYSeries zFFTseries = new SimpleXYSeries(fftfrequency, zfftValues, ""/*"Output z"*/);
+            LineAndPointFormatter xFFTformatter = new LineAndPointFormatter(Color.BLUE, null, null, null);
+            LineAndPointFormatter yFFTformatter = new LineAndPointFormatter(Color.RED, null, null, null);
+            LineAndPointFormatter zFFTformatter = new LineAndPointFormatter(Color.BLACK, null, null, null);
 
-                    }
-            }}
-            if(switchConfiguration[2]){     //mecanical loosness
-            }
-            if(switchConfiguration[3]){     //bearing fault
-            }
-            if(switchConfiguration[4]){     //electrical or mecanical default
-                for (int i = 0; i < datafrequency0.size(); i++) {
-                    if (Math.abs(datafrequency0.get(i).getY() - 100.0)  < 0.1) {
-                        // there are electrical default
-
-                    }
-                }
-            }
+            data_output.clear();        // clear the output data
+//1
+            data_output.addSeries(xFFTseries, xFFTformatter);
+            data_output.addSeries(yFFTseries, yFFTformatter);
+            data_output.addSeries(zFFTseries, zFFTformatter);
+            data_output.addSeries(Xseries, Xformatter);
+            data_output.addSeries(Yseries, Yformatter);
+            data_output.addSeries(Zseries, Zformatter);
+            data_output.setRangeBoundaries(-150, 20, BoundaryMode.FIXED);
+            PanZoom.attach(data_output, PanZoom.Pan.BOTH, PanZoom.Zoom.STRETCH_BOTH);
+            // Assuming data_output is your XYPlot object
+//
+            data_output.redraw(); // Refresh the plot
         }
-
     };
-    public double[] getMaxAnalyse(@NonNull double[] data){
-            double max =-1.0E100;
-            int pos = 0;
-            for(int i = 0; i <data.length/2;i++){
-                if(max < data[i]){
-                    max = data[i];
-                    pos = i;
-                }
-            }
-            return (new double[]{max,pos});
-        }
-
-
 }
 
 
