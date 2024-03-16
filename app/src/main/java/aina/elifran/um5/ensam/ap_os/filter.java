@@ -1,11 +1,11 @@
 package aina.elifran.um5.ensam.ap_os;
 public class filter {
-    private static int filterOrder;
-    private volatile double[] numBuffer;
-    public static double[] filterCoefficient;
-    private static double samplingfrequency;
-    private static double cutofffrequency;
-    private volatile boolean isCreated = false;
+    private  int filterOrder;
+    private double[] numBuffer;
+    public double[] filterCoefficient;
+    private double samplingfrequency;
+    private double cutofffrequency;
+    private boolean isCreated = false;
     filter(int ordre, double sampling_frequency,double cut_offFrequency){
         if((int)(ordre/2) == ordre/2)// order filter iis odd
             filterOrder = ordre+1;
