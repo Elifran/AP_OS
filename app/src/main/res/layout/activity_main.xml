@@ -177,7 +177,7 @@
                     android:id="@+id/button_param"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="WAIT PLEASE |Analyse>|"
+                    android:text="BEGIN PLEASE |Analyse>|"
                     android:textSize="12sp"
                     app:flow_horizontalAlign="center"
                     app:layout_constraintBottom_toBottomOf="parent"

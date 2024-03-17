@@ -91,7 +91,7 @@ public class dataAnalyse {
     public void addData(double data, long timeStamp){ // insert data to the buffer befor analyse
         shiftRight(dataMesureArray,dataTimeArray,data,timeStamp);
         counter++;      // counte any data
-        if(counter > data_buffer)
+        if(counter == data_buffer)
             listener.analysePossible();
     }
 
@@ -168,6 +168,7 @@ public class dataAnalyse {
 /*----------------------------------------------------------**------------------------------------------------------------*/
             isDone(true,analyseResultData);     // send to the interface that the analyse is done
             analyseStatus = false;                    // analyse done
+            counter = 0;                              //reset the counter
 /*----------------------------------------------------------**------------------------------------------------------------*/
         }};
     public double[] getMaxAnalyse(@NonNull double[] data, int low, int hight){
