@@ -39,7 +39,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements SensorEventListener, MenuFragment.OnDataChangeListener,dataAnalyse.analyseDoneListener {
     int couter = 0;
     private final double vibrationConstante = 0.285;
-    private TextView OutputX, OutputY, OutputZ,data_output_label;
+    private TextView OutputX, OutputY, OutputZ,data_output_label,analyse_result;
     private Button button_stop,button_param;
     private GraphView data_output1;
     private XYPlot data_output;
@@ -95,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         command_layout_setparams = findViewById(R.id.command_layout);
         output_content = findViewById(R.id.output_content);
         output_label = findViewById(R.id.output_label);
+        analyse_result = findViewById(R.id.analyse_result);
 
         data_sensor_array = new double[4][data_leingh];
         data_fft_array = new double[4][data_leingh];
@@ -265,17 +266,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if (!ready) {
                     Toast.makeText(getApplicationContext(), "Not Ready Yet", Toast.LENGTH_SHORT).show();
                     button_param.setText("NOT READY YET");
+                    analyse_result.setText("");
                 }else {
-                    analyseData = true;
                     button_param.setText(" READY TO GET DATA");
+                    analyse_result.setText("Ready to get Data \n");
                     if (!dataAnalyseVar.isAnalizing()){
+                        analyseData = true;
+                        button_param.setText("COLLECTING DATA ...");
+                        analyse_result.setText("Collecting data\nWAIT ...");
                         if(!dataAnalyseVar.beginAnalyse()){
                             Toast.makeText(getApplicationContext(), "Please Wait Before Analysing", Toast.LENGTH_SHORT).show();
-                            button_param.setText("COLLECTING DATA ...");
                         }
                         else{
                             Toast.makeText(getApplicationContext(), "Analyse Begin", Toast.LENGTH_SHORT).show();
                             button_param.setText("ANALISING ...");
+                            analyse_result.setText("Analysing the data\nWAIT" );
+                            analyseData = false;
                         }
 
                     }else
@@ -517,17 +523,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     public void analyseDone(boolean status) {
+
         button_param.setText("DONE - ANALYSE");
         Toast.makeText(getApplicationContext(), "Analyse Done", Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    public void analyseResult(List<String> result) {
+    public void analyseResult(List<data> result) {
+        analyse_result.setText("The result is : \n");
+        for (data resultdata:result){
+            //String truncatedValue = String.valueOf(resultdata.getValue()).substring(0, Math.min(String.valueOf(resultdata.getValue()).length(), 8));
+            analyse_result.append(resultdata.getId() +  resultdata.getValue() + "% \n");
+        }
     }
 
     @Override
     public void analysePossible() {
+        analyseData = false;                        //stop collecting data
         button_param.setText("READY - ANALYSE");
+        analyse_result.setText("Ready ...  : \n");
         Toast.makeText(getApplicationContext(), "Analyse Possible now", Toast.LENGTH_SHORT).show();
     }
 

@@ -25,7 +25,7 @@ public class dataAnalyse {
     private fft dataAnalyseFft;
     long counter;
     private analyseDoneListener listener;
-    List<String> analyseResultData;
+    List<data> analyseResultData = new ArrayList<>();
     private Handler analyseHandler = new Handler(Looper.myLooper());;
     dataAnalyse(@NonNull int buffer,
                 @NonNull double sampling_frequency,
@@ -52,6 +52,11 @@ public class dataAnalyse {
                           Object Value){
         switch (Config){
             case "SAMPLING FREQ":
+                //counter = 0;
+                                                    /* this might take alot of time if the mobile phone is not stable
+                                                    *  reset the data to avoid som error on calculating frequenncy
+                                                    *
+                                                    * */
                 samplingFrequency = (double) Value;
                 break;
             case "RPM":
@@ -73,14 +78,14 @@ public class dataAnalyse {
     // analyse status listener on done
     public interface analyseDoneListener {
         void analyseDone(boolean status);
-        void analyseResult(List<String> result);
+        void analyseResult(List<data> result);
         void analysePossible();
     }
 
     public void setAnalyseDoneListener(analyseDoneListener listener) {
         this.listener = listener;
     }
-    private void isDone(boolean status, List<String> result){
+    private void isDone(boolean status, List<data> result){
         listener.analyseDone(status);
         listener.analyseResult(result);
     }
@@ -92,7 +97,7 @@ public class dataAnalyse {
     public void addData(double data, long timeStamp){ // insert data to the buffer befor analyse
         shiftRight(dataMesureArray,dataTimeArray,data,timeStamp);
         counter++;      // counte any data
-        if(counter == data_buffer)
+        if(counter ==(int) (data_buffer +data_buffer*0.1))
             listener.analysePossible();
     }
 
@@ -123,7 +128,7 @@ public class dataAnalyse {
     private final Runnable dataAnalyse = new Runnable() {
         @Override
         public void run() {
-            List<data> dataFrequency = new ArrayList<>();
+            analyseResultData.clear();
             int freqShift = (int) (data_buffer*0.1/samplingFrequency);         // 0.1Hz shift frequency
             dataFftArray  = dataAnalyseFft.getAbsfft(dataMesureArray.clone()); // get the absolute value of the fft
             double[] data = dataFftArray.clone();
@@ -132,13 +137,13 @@ public class dataAnalyse {
             if(switchConfiguration[0]){     // static vibration unbalanced
                 int freqCentred =(int) (data_buffer*rpmConfiguration/(60*2*samplingFrequency));
                 double[] data1  =  getMaxAnalyse(data,freqCentred - freqShift,freqCentred + freqShift);
-                    dataFrequency.add(new data("Static Vibration State",data1[0] * 100*powerCoefficient/powerCoefficient));
+                analyseResultData.add(new data("Static Vibration State ----> ",data1[0] * 100*powerCoefficient/powerCoefficient));
             }
             /*_____________________________________________ dynamic default _________________________________________*/
             if(switchConfiguration[1]){     //dynamic vibration unbalanced
                 int freqCentred =(int) (data_buffer*rpmConfiguration/(60*samplingFrequency));
                 double[] data1  =  getMaxAnalyse(data,freqCentred - freqShift,freqCentred + freqShift);
-                dataFrequency.add(new data("Dynamic Vibration State",data1[0] * 100*powerCoefficient/powerCoefficient));
+                analyseResultData.add(new data("Dynamic Vibration State ---> ",data1[0] * 100*powerCoefficient/powerCoefficient));
             }
             /*__________________________________________ mechanical  looseness ______________________________________*/
             if(switchConfiguration[2]){     //mechanical looseness
@@ -157,13 +162,13 @@ public class dataAnalyse {
                 }
                 Temp = Math.sqrt(Temp);
 
-                dataFrequency.add(new data("Bearing default State", Temp*100*powerCoefficient/powerCoefficient));
+                analyseResultData.add(new data("Bearing default State -----> ", Temp*100*powerCoefficient/powerCoefficient));
             }
             /*______________________________________________ magnet default _________________________________________*/
             if(switchConfiguration[4]){     //electrical or mechanical default
                 int freqCentred =(int) (50);
                 double[] data1  =  getMaxAnalyse(data,freqCentred - freqShift,freqCentred + freqShift);
-                dataFrequency.add(new data("Bobine State",data1[0] * 100*powerCoefficient/powerCoefficient));
+                analyseResultData.add(new data("Bobine State --------------> ",data1[0] * 100*powerCoefficient/powerCoefficient));
             }
 
 /*----------------------------------------------------------**------------------------------------------------------------*/
