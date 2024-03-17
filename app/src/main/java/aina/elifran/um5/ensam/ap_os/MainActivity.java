@@ -534,6 +534,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         for (data resultdata:result){
             //String truncatedValue = String.valueOf(resultdata.getValue()).substring(0, Math.min(String.valueOf(resultdata.getValue()).length(), 8));
             analyse_result.append(resultdata.getId() +  resultdata.getValue() + "% \n");
+            button_param.setText("RE-DO - ANALYSE");
         }
     }
 
