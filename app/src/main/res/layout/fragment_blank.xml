@@ -18,7 +18,6 @@
         android:layout_marginTop="10dp"
         android:src="@mipmap/logo"
         app:fabSize="mini"
-        android:onClick=""
         tools:ignore="OnClick" />
 
 </RelativeLayout>

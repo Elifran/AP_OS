@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     LinearLayout command_layout_setparams;
     SensorManager sensorManager;
     Sensor OutputSensor;
-    private final int data_leingh = 2048*4; // min 256
+    private final int data_leingh = 2048*2; // min 256
     private final int print_scale = 512;
     private volatile double[][] data_sensor_array;
     private volatile  double[][] data_fft_array;

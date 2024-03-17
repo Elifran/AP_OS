@@ -1,9 +1,5 @@
 package aina.elifran.um5.ensam.ap_os;
 
-import android.content.Context;
-
-import androidx.annotation.NonNull;
-
 public class filter {
     private  final int filterOrder;
     private double[] numBuffer;

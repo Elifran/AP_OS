@@ -84,6 +84,7 @@ public class dataAnalyse {
         listener.analyseDone(status);
         listener.analyseResult(result);
     }
+
     /*----------------------------------------------------------------------------- ask status ------------------------------------------------------------------------*/
     public boolean isAnalizing(){return analyseStatus;};
 

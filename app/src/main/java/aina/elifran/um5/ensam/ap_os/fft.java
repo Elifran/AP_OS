@@ -3,7 +3,6 @@ import static java.lang.Math.pow;
 import java.lang.Math;
 import android.os.Handler;
 import android.os.Looper;
-
 import androidx.annotation.NonNull;
 
 
@@ -28,7 +27,6 @@ public class fft {
         BitReversData = new int[length_data];
         fftCoefficient = new Complex[log2_data][length_data];
         data_input = new double[length_data];
-
         bitrevers();
         getFftCoefficient();
     }

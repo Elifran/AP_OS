@@ -154,7 +154,7 @@
                     android:layout_toStartOf="@+id/switch5"
                     android:layout_toLeftOf="@+id/switch5"
                     android:gravity="left"
-                    android:text="Magnetical/Mecanical default" />
+                    android:text="Magnetical / Mecanical default" />
 
                 <Switch
                     android:id="@+id/switch5"

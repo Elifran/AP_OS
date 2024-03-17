@@ -14,6 +14,8 @@ public class data {
         Id = id;
     }
     data() {
+        Id = null;
+        Value = null;
     }
     public void setId(Object id){ Id = String.valueOf(id);}
     public void setValue(Object value){ Value = value;}
