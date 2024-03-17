@@ -1,5 +1,8 @@
 package aina.elifran.um5.ensam.ap_os;
 
+import android.os.Looper;
+import android.os.Handler;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -7,7 +10,6 @@ import com.jjoe64.graphview.series.DataPoint;
 
 import java.util.ArrayList;
 import java.util.List;
-
 
 
 public class dataAnalyse {
@@ -22,13 +24,15 @@ public class dataAnalyse {
     private boolean analyseStatus = false;
     private fft dataAnalyseFft;
     long counter;
+    private analyseDoneListener listener;
+    List<String> analyseResultData;
+    private Handler analyseHandler = new Handler(Looper.myLooper());;
     dataAnalyse(@NonNull int buffer,
                 @NonNull double sampling_frequency,
                 @NonNull double rpm_Configuration,
                 @NonNull double power_Configuration,
                 @NonNull int bearing_Configuration ,
-                @Nullable boolean[] switch_Configuration)
-    {
+                @Nullable boolean[] switch_Configuration) {
         data_buffer = buffer;
         samplingFrequency = sampling_frequency;
         rpmConfiguration = rpm_Configuration;
@@ -36,22 +40,67 @@ public class dataAnalyse {
         bearingConfiguration = bearing_Configuration;
         switchConfiguration = switch_Configuration.clone();
 
-    // initialize all array :
+        // initialize all array :
         dataMesureArray = new double[data_buffer];
         dataFftArray = new double[data_buffer];
         dataTimeArray = new long[data_buffer];
         dataAnalyseFft = new fft(data_buffer);
 
     }
-    public void addData(double data, long timeStamp) // insert data to the buffer befor analyse
-    {
+
+    public void setConfig(String Config,
+                          Object Value){
+        switch (Config){
+            case "SAMPLING FREQ":
+                samplingFrequency = (double) Value;
+                break;
+            case "RPM":
+                rpmConfiguration = (double) Value;
+                break;
+            case "POWER" :
+                powerConfiguration = (double) Value;
+                break;
+            case "BEARING":
+                bearingConfiguration = (int) Value;
+                break;
+            case "SWITCH":
+                switchConfiguration = (boolean[]) Value;
+            default:
+                break;
+        }
+    }
+    /*-------------------------------------------------------------- analyse status interface to give data ----------------------------------------------------------*/
+    // analyse status listener on done
+    public interface analyseDoneListener {
+        void analyseDone(boolean status);
+        void analyseResult(List<String> result);
+        void analysePossible();
+    }
+
+    public void setAnalyseDoneListener(analyseDoneListener listener) {
+        this.listener = listener;
+    }
+    private void isDone(boolean status, List<String> result){
+        listener.analyseDone(status);
+        listener.analyseResult(result);
+    }
+    /*----------------------------------------------------------------------------- ask status ------------------------------------------------------------------------*/
+    public boolean isAnalizing(){return analyseStatus;};
+
+    /*----------------------------------------------------------------------------- adding data -----------------------------------------------------------------------*/
+    public void addData(double data, long timeStamp){ // insert data to the buffer befor analyse
         shiftRight(dataMesureArray,dataTimeArray,data,timeStamp);
         counter++;      // counte any data
+        if(counter > data_buffer)
+            listener.analysePossible();
     }
+
+    /*--------------------------------------------------------------------  begin the analyse of the data -------------------------------------------------------------*/
     public boolean beginAnalyse(){
         boolean analysePossible;
-        if (counter > data_buffer){
-            dataFftArray = dataAnalyseFft.getAbsfft(dataMesureArray.clone()); // get the absolute value of the fft
+        if (counter > data_buffer && analyseStatus == false){
+            analyseStatus = true; // analyse is running
+            analyseHandler.post(dataAnalyse);
             analysePossible = true;
         }
         else
@@ -59,6 +108,7 @@ public class dataAnalyse {
         return analysePossible;
     }
 
+    /*------------------------------------------------------------------------- move data to to the left --------------------------------------------------------------*/
     private void shiftRight(@NonNull double[] dataArray , long[] arrayTime, double dataIn , long timestamp){
         for (int i = data_buffer - 1; i > 0; i--){
             dataArray[i] = dataArray[i-1];
@@ -67,55 +117,63 @@ public class dataAnalyse {
         arrayTime[0] = 0;
         dataArray[0] = dataIn;
     }
+
+    /*----------------------------------------------------------------------------- data analyse task -----------------------------------------------------------------*/
     private final Runnable dataAnalyse = new Runnable() {
         @Override
         public void run() {
-            List<DataPoint> dataFrequency = new ArrayList<>();
+            List<data> dataFrequency = new ArrayList<>();
+            int freqShift = (int) (data_buffer*0.1/samplingFrequency);         // 0.1Hz shift frequency
+            dataFftArray  = dataAnalyseFft.getAbsfft(dataMesureArray.clone()); // get the absolute value of the fft
             double[] data = dataFftArray.clone();
 
-            for( int i = 0; i<samplingFrequency + 1 ; i+= (int) (samplingFrequency*60/rpmConfiguration)){
-                double[] TempData = getMaxAnalyse(data);
-                dataFrequency.add(new DataPoint(TempData[0],dataFftArray[(int)TempData[1]]));
-                if((int)TempData[1] > 10)
-                    for (int j = (int)TempData[1]-10;j<(int)TempData[1]+10;j++) data[j] = 1E-100;
-                else
-                    for (int j = 0;j<(int)TempData[1]+10;j++) data[j] = 1E-100;
-            }
-            // static analyse
+            /*______________________________________________ static default _________________________________________*/
             if(switchConfiguration[0]){     // static vibration unbalanced
-                for (int i = 0; i < dataFrequency.size(); i++) {
-                    if (Math.abs(dataFrequency.get(i).getY() - rpmConfiguration/60.0)  < 1.0) {
-                        // there are static  default
-
-                    }
-                }
+                int freqCentred =(int) (data_buffer*rpmConfiguration/(60*2*samplingFrequency));
+                double[] data1  =  getMaxAnalyse(data,freqCentred - freqShift,freqCentred + freqShift);
+                    dataFrequency.add(new data("Static Vibration State",data1[0] * 100*powerCoefficient/powerCoefficient));
             }
+            /*_____________________________________________ dynamic default _________________________________________*/
             if(switchConfiguration[1]){     //dynamic vibration unbalanced
-                for (int i = 0; i < dataFrequency.size(); i++) {
-                    if (Math.abs(dataFrequency.get(i).getY() - 2.0 * rpmConfiguration/60.0)  < 1.0) {
-                        // there are dynamic default
-
-                    }
-                }}
-            if(switchConfiguration[2]){     //mecanical loosness
+                int freqCentred =(int) (data_buffer*rpmConfiguration/(60*samplingFrequency));
+                double[] data1  =  getMaxAnalyse(data,freqCentred - freqShift,freqCentred + freqShift);
+                dataFrequency.add(new data("Dynamic Vibration State",data1[0] * 100*powerCoefficient/powerCoefficient));
             }
+            /*__________________________________________ mechanical  looseness ______________________________________*/
+            if(switchConfiguration[2]){     //mechanical looseness
+                ;
+            }
+            /*______________________________________________ bearing default _________________________________________*/
             if(switchConfiguration[3]){     //bearing fault
-            }
-            if(switchConfiguration[4]){     //electrical or mecanical default
-                for (int i = 0; i < dataFrequency.size(); i++) {
-                    if (Math.abs(dataFrequency.get(i).getY() - 100.0)  < 0.1) {
-                        // there are electrical default
-
-                    }
+                double[][] dataTep = new double[4][2];
+                for (int i = 0; i < 3;i++){
+                    int freqCentred =(int) (data_buffer*rpmConfiguration*(bearingConfiguration - 1 + i)/(60*2*samplingFrequency));
+                    dataTep[0]  =  getMaxAnalyse(data,freqCentred - freqShift,freqCentred + freqShift);
                 }
-            }
-        }
+                double Temp = 0.0;
+                for (int i =  0 ; i<3 ; i++){
+                    Temp+= Math.pow(dataTep[i][0],2);
+                }
+                Temp = Math.sqrt(Temp);
 
-    };
-    public double[] getMaxAnalyse(@NonNull double[] data){
+                dataFrequency.add(new data("Bearing default State", Temp*100*powerCoefficient/powerCoefficient));
+            }
+            /*______________________________________________ magnet default _________________________________________*/
+            if(switchConfiguration[4]){     //electrical or mechanical default
+                int freqCentred =(int) (50);
+                double[] data1  =  getMaxAnalyse(data,freqCentred - freqShift,freqCentred + freqShift);
+                dataFrequency.add(new data("Bobine State",data1[0] * 100*powerCoefficient/powerCoefficient));
+            }
+
+/*----------------------------------------------------------**------------------------------------------------------------*/
+            isDone(true,analyseResultData);     // send to the interface that the analyse is done
+            analyseStatus = false;                    // analyse done
+/*----------------------------------------------------------**------------------------------------------------------------*/
+        }};
+    public double[] getMaxAnalyse(@NonNull double[] data, int low, int hight){
         double max =-1.0E100;
         int pos = 0;
-        for(int i = 0; i <data.length/2;i++){
+        for(int i = low; i <hight;i++){
             if(max < data[i]){
                 max = data[i];
                 pos = i;

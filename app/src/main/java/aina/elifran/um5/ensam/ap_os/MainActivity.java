@@ -34,10 +34,9 @@ import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements SensorEventListener, MenuFragment.OnDataChangeListener {
+public class MainActivity extends AppCompatActivity implements SensorEventListener, MenuFragment.OnDataChangeListener,dataAnalyse.analyseDoneListener {
     int couter = 0;
     private final double vibrationConstante = 0.285;
     private TextView OutputX, OutputY, OutputZ,data_output_label;
@@ -49,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     SensorManager sensorManager;
     Sensor OutputSensor;
     private final int data_leingh = 2048; // min 256
+    private final int print_scale = 256;
     private volatile double[][] data_sensor_array;
     private volatile  double[][] data_fft_array;
     public static long act_timstamp,last_timstamp,step_time;
@@ -66,6 +66,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private static final int filterOrder = 50;
     private static final double cutOffFrequency = 0.45; // must be less than 0.5
     private Handler dofftHandler,doplotHandler,doprintHandler;
+    boolean analyseData = false;
+    int analyseBuffer = 2048;
+    dataAnalyse dataAnalyseVar;
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,10 +129,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             data_sensor_array[0][0] =(float)(Xfilterdata.filterData(actSensorValues[0]));
             data_sensor_array[1][0] =(float)(Yfilterdata.filterData(actSensorValues[1]));
             data_sensor_array[2][0] =(float)(Zfilterdata.filterData(actSensorValues[2]));
+            if (analyseData){
+                dataAnalyseVar.addData(data_sensor_array[0][0],step_time);  // asume that we analyse the first vibration data
+            }
             if(     (Xfilterdata.isConfigChange(samplingfrequency,cutOffFrequency*samplingfrequency) ||
                     Yfilterdata.isConfigChange(samplingfrequency,cutOffFrequency*samplingfrequency) ||
                     Xfilterdata.isConfigChange(samplingfrequency,cutOffFrequency*samplingfrequency) ) && flag){
+                dataAnalyseVar.setConfig("SAMPLING FREQ",samplingfrequency);
                 Toast.makeText(getApplicationContext(), "Configuration filter Have been Changed", Toast.LENGTH_LONG).show();
+
             }
         }
         else {
@@ -143,6 +151,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         Zfilterdata = new filter(filterOrder,samplingfrequency,cutOffFrequency*samplingfrequency);
                         filterStatus = true;        // avoid recreation of the filter class
                         Toast.makeText(getApplicationContext(), "filter initialized at Fe :" + samplingfrequency + "Hz", Toast.LENGTH_LONG).show();
+
+                        dataAnalyseVar = new dataAnalyse(analyseBuffer,samplingfrequency,rpmConfiguration,powerConfiguration,bearingConfiguration,switchConfiguration);
+                        dataAnalyseVar.setAnalyseDoneListener(this);
+
                     }
                     if (Xfilterdata.isCreated() && Yfilterdata.isCreated() && Zfilterdata.isCreated()){
                         ready = true;}
@@ -151,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     couter++;
                 }
         }
-        if(data_couter > data_leingh/256 ) {
+        if(data_couter > data_leingh/print_scale) {
             if (flag && ready) {
                 dofftHandler.post(getfftAbs);
                 //doplotHandler.post(data_plot);   //doplotHandler in other way
@@ -209,6 +221,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 default:
                     break;
             }
+            if(ready){
+                dataAnalyseVar.setConfig(data.getId(),data.getValue());
+            }
         }
             Toast.makeText(getApplicationContext(),"Configuration Saved", Toast.LENGTH_SHORT).show();
     }
@@ -246,15 +261,28 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         });
         button_param.setOnClickListener(new View.OnClickListener(){
             public void onClick(View view) {
-                //if(!menu_fragment.isAdded())
-                //    getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainer,menu_fragment).commit();
-                //else if (!blank_fragment.isAdded())
-                //    getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainer,blank_fragment).commit();
-                Toast.makeText(getApplicationContext(), "No Function Implemented Yet", Toast.LENGTH_SHORT).show();
+                if (!ready) {
+                    Toast.makeText(getApplicationContext(), "Not Ready Yet", Toast.LENGTH_SHORT).show();
+                }else {
+                    if (!dataAnalyseVar.isAnalizing()){
+                        if(!dataAnalyseVar.beginAnalyse()){
+                            Toast.makeText(getApplicationContext(), "Please Wait Before Analysing", Toast.LENGTH_SHORT).show();
+                            button_param.setText("WAIT PLS");
+                        }
+                        else{
+                            Toast.makeText(getApplicationContext(), "Analyse Begin", Toast.LENGTH_SHORT).show();
+                            button_param.setText("ANALISING ...");
+                        }
+
+                    }else
+                        Toast.makeText(getApplicationContext(), "Analyse is Processing, Please Wait", Toast.LENGTH_SHORT).show();
+                }
+
             }
         });
     }
     private void setupView(){
+
     }
     private void setConfiguration(){
 
@@ -369,15 +397,29 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         array[3][0] = 0;
         samplingfrequency = 1000*data_leingh/data_sensor_array[3][data_leingh-1];
     }
+
+    private void switchSetting(boolean[] switchData){
+        switchConfiguration = switchData.clone();
+    }
+    private void rpmSetting(double rpmData){
+        rpmConfiguration = rpmData;
+    }
+    private void powerSetting(double powerData){
+        powerConfiguration = powerData;
+    }
+    private void bearingSetting(int bearingNumber){
+        bearingConfiguration = bearingNumber;
+    }
+
     private final Runnable  getfftAbs = new Runnable() {
         @Override
         public void run() {
             double resolution = samplingfrequency/data_leingh;
-            for (int i = 0;i<data_leingh-1;i++){
+            for (int i = 0;i<data_leingh;i++){
                 //data_fft_array[3][i+1] = data_sensor_array[3][i+1];
-                data_fft_array[3][i+1] = resolution*i;
+                data_fft_array[3][i] = resolution*i;
             }
-            data_fft_array[3][0] = 0;
+            //data_fft_array[3][0] = 0;
             data_fft_array[0] = ffftdata.getLogtfft(toAc(data_sensor_array[0]));
             data_fft_array[1] = ffftdata.getLogtfft(toAc(data_sensor_array[1]));
             data_fft_array[2] = ffftdata.getLogtfft(toAc(data_sensor_array[2]));
@@ -449,10 +491,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             OutputZ.setText(String.valueOf(data_sensor_array[2][0]));
             data_output_label.setText("");
             data_output_label.append(
-                        "X : f : " + maxfreq[0][1] + "Hz, v : " + maxfreq[0][0] + "dB" + "\n" +
-                        "Y : f : " + maxfreq[1][1] + "Hz, v : " + maxfreq[1][0] + "dB" + "\n" +
-                        "Z : f : " + maxfreq[2][1] + "Hz, v : " + maxfreq[2][0] + "dB" + "\n" +
-                        "Fe : " + samplingfrequency + "Hz");
+                    "X : f : " + maxfreq[0][1] + "Hz, v : " + maxfreq[0][0] + "dB" + "\n" +
+                            "Y : f : " + maxfreq[1][1] + "Hz, v : " + maxfreq[1][0] + "dB" + "\n" +
+                            "Z : f : " + maxfreq[2][1] + "Hz, v : " + maxfreq[2][0] + "dB" + "\n" +
+                            "Fe : " + samplingfrequency + "Hz");
             if (!flag2) {
                 setConfiguration();
                 flag2 = true;
@@ -463,32 +505,28 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         }
     };
-    private void switchSetting(boolean[] switchData){
-        switchConfiguration = switchData.clone();
-    }
-    private void rpmSetting(double rpmData){
-        rpmConfiguration = rpmData;
-    }
-    private void powerSetting(double powerData){
-        powerConfiguration = powerData;
-    }
-    private void bearingSetting(int bearingNumber){
-        bearingConfiguration = bearingNumber;
+
+
+/*-------------------------------------------------------------------------data analyse implement-------------------------------------------------*/
+
+    //data analyse listener implementation
+
+    @Override
+    public void analyseDone(boolean status) {
     }
 
+    @Override
+    public void analyseResult(List<String> result) {
+    }
+
+    @Override
+    public void analysePossible() {
+        button_param.setText("ANALYSE");
+        Toast.makeText(getApplicationContext(), "Analyse Possible now", Toast.LENGTH_SHORT).show();
+    }
 
 
-
-
-
-
-
-
-
-
-
-
-    // no usag function
+    /*--------------------------------------------------------------------------------not used function ----------------------------------------------------------*/
     private final Runnable data_plot = new Runnable() {
         @Override
         public void run() {
@@ -545,6 +583,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             data_output.redraw(); // Refresh the plot
         }
     };
+
 }
 
 
