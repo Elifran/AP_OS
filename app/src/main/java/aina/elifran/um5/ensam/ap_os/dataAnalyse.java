@@ -161,7 +161,6 @@ public class dataAnalyse {
                     Temp+= Math.pow(dataTep[i][0],2);
                 }
                 Temp = Math.sqrt(Temp);
-
                 analyseResultData.add(new data("Bearing default State -----> ", Temp*100*powerCoefficient/powerCoefficient));
             }
             /*______________________________________________ magnet default _________________________________________*/
