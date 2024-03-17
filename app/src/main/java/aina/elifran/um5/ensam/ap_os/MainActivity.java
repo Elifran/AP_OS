@@ -35,6 +35,7 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener, MenuFragment.OnDataChangeListener,dataAnalyse.analyseDoneListener {
     int couter = 0;
@@ -112,6 +113,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         OutputSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorManager.registerListener(this, OutputSensor, SensorManager.SENSOR_DELAY_FASTEST);
 
+        parseDataPreferences(preferences.readPreferences(getApplicationContext()));
         setupView();
         setupButton();
         setConfiguration();
@@ -137,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     Yfilterdata.isConfigChange(samplingfrequency,cutOffFrequency*samplingfrequency) ||
                     Xfilterdata.isConfigChange(samplingfrequency,cutOffFrequency*samplingfrequency) ) && flag){
                 dataAnalyseVar.setConfig("SAMPLING FREQ",samplingfrequency);
-                Toast.makeText(getApplicationContext(), "Configuration filter Have been Changed", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Configuration filter Have been Changed", Toast.LENGTH_LONG).show();
 
             }
         }
@@ -227,6 +229,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 dataAnalyseVar.setConfig(data.getId(),data.getValue());
             }
         }
+            sendDataPreferences();
             Toast.makeText(getApplicationContext(),"Configuration Saved", Toast.LENGTH_SHORT).show();
     }
     public Object getDataMain(String Id){
@@ -527,7 +530,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         button_param.setText("DONE - ANALYSE");
         Toast.makeText(getApplicationContext(), "Analyse Done", Toast.LENGTH_SHORT).show();
     }
-
     @Override
     public void analyseResult(List<data> result) {
         analyse_result.setText("The result is : \n");
@@ -537,7 +539,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             button_param.setText("RE-DO - ANALYSE");
         }
     }
-
     @Override
     public void analysePossible() {
         analyseData = false;                        //stop collecting data
@@ -546,6 +547,51 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Toast.makeText(getApplicationContext(), "Analyse Possible now", Toast.LENGTH_SHORT).show();
     }
 
+    /*--------------------------------------------------------------------------------save/get preferencies ----------------------------------------------------------*/
+    private void parseDataPreferences(Map<String,?> dataSaved){
+        if(dataSaved != null){
+            for (Map.Entry<String, ?> entry : dataSaved.entrySet()) {
+                switch (entry.getKey()){
+                    case "rpmConfiguration":
+                        rpmConfiguration = (double)((float)entry.getValue());
+                        break;
+                    case "powerConfiguration":
+                        powerConfiguration = (double) ((float)entry.getValue());
+                        break;
+                    case "bearingConfiguration":
+                        bearingConfiguration = (int)entry.getValue();
+                        break;
+                    case "SW1":
+                        switchConfiguration[0]= (boolean)entry.getValue();
+                        break;
+                    case "SW2":
+                        switchConfiguration[1]= (boolean)entry.getValue();
+                        break;
+                    case "SW3":
+                        switchConfiguration[2]= (boolean)entry.getValue();
+                        break;
+                    case "SW4":
+                        switchConfiguration[3]= (boolean)entry.getValue();
+                        break;
+                    case "SW5":
+                        switchConfiguration[4]= (boolean)entry.getValue();
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+    private void sendDataPreferences(){
+        preferences.writePreferences(getApplicationContext(),"rpmConfiguration",rpmConfiguration);
+        preferences.writePreferences(getApplicationContext(),"powerConfiguration",powerConfiguration);
+        preferences.writePreferences(getApplicationContext(),"bearingConfiguration",bearingConfiguration);
+        preferences.writePreferences(getApplicationContext(),"SW1",switchConfiguration[0]);
+        preferences.writePreferences(getApplicationContext(),"SW2",switchConfiguration[1]);
+        preferences.writePreferences(getApplicationContext(),"SW3",switchConfiguration[2]);
+        preferences.writePreferences(getApplicationContext(),"SW4",switchConfiguration[3]);
+        preferences.writePreferences(getApplicationContext(),"SW5",switchConfiguration[4]);
+    }
 
     /*--------------------------------------------------------------------------------not used function ----------------------------------------------------------*/
     private final Runnable data_plot = new Runnable() {
