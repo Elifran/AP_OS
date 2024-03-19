@@ -40,13 +40,13 @@ public class MenuFragment extends Fragment {
 
     private ViewGroup menu_layout;
     private FloatingActionButton setting_button;
-    private Button confirm_button;
+    private Button confirm_button, track_button;
     private Switch SW1,SW2,SW3,SW4,SW5,SW6;
-    private EditText RPM,POWER,BEARING;
+    private EditText RPM,POWER,BEARING,NOISE,POWERCOEFFICIENT;
     private String mParam1;
     private String mParam2;
     private boolean[] SwitchValue = new boolean[5];
-    private double rpmValue,powerValue;
+    private double rpmValue,powerValue,powerCoefficientValue,noiseCoefficientValue;
     private int bearingValue;
     private OnDataChangeListener mListener;
 
@@ -82,10 +82,13 @@ public class MenuFragment extends Fragment {
         menu_layout = (ViewGroup) view.findViewById(R.id.menu_layout);
         setting_button = view.findViewById(R.id.setting_button);
         confirm_button = view.findViewById(R.id.confirm_button);
+        track_button = view.findViewById(R.id.velocityTracking);
 
         RPM = view.findViewById(R.id.velocity_value);
         POWER = view.findViewById(R.id.power_value);
         BEARING = view.findViewById(R.id.bearing_value);
+        NOISE = view.findViewById(R.id.noise_value);
+        POWERCOEFFICIENT = view.findViewById(R.id.powerCoefficient_value);
 
         SW1 = view.findViewById(R.id.switch1);
         SW2 = view.findViewById(R.id.switch2);
@@ -110,10 +113,16 @@ public class MenuFragment extends Fragment {
     }
     public interface OnDataChangeListener {
         void onDataChanged(Object newData);
+        void trackData(double rpm);
     }
     private void sendData(Object data) {
         if (mListener != null) {
             mListener.onDataChanged(data);
+        }
+    }
+    private void trackData(double rpm) {
+        if (mListener != null) {
+            mListener.trackData(rpm);
         }
     }
     @Override
@@ -146,6 +155,14 @@ public class MenuFragment extends Fragment {
                 closeSetting();
             }
         });
+        track_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                trackData(rpmValue);
+                //closeSetting();
+            }
+        });
+
         confirm_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -153,6 +170,8 @@ public class MenuFragment extends Fragment {
                 sendData(new data("RPM",rpmValue));
                 sendData(new data("POWER",powerValue));
                 sendData(new data("SWITCH",SwitchValue));
+                sendData(new data("POWER COEFFICIENT",powerCoefficientValue));
+                sendData(new data("NOISE",noiseCoefficientValue));
                 closeSetting();
             }
         });
@@ -249,6 +268,46 @@ public class MenuFragment extends Fragment {
                 }
             }
         });
+        POWERCOEFFICIENT.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+            @Override
+            public void afterTextChanged(Editable editable) {
+                String powerCoefficientText = POWERCOEFFICIENT.getText().toString(); // Get the text entered in POWER view
+                if (!powerCoefficientText.isEmpty()) { // Check if the text is not empty
+                    try {
+                        powerCoefficientValue = Double.parseDouble(powerCoefficientText); // Convert text to float
+                    } catch (NumberFormatException e) {
+                        powerCoefficientValue = 0;
+                    }
+                }
+            }
+        });
+        NOISE.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+            @Override
+            public void afterTextChanged(Editable editable) {
+                String noisecoefficientText = NOISE.getText().toString(); // Get the text entered in POWER view
+                if (!noisecoefficientText.isEmpty()) { // Check if the text is not empty
+                    try {
+                        noiseCoefficientValue = Double.parseDouble(noisecoefficientText); // Convert text to float
+                    } catch (NumberFormatException e) {
+                        noiseCoefficientValue = 0;
+                    }
+                }
+            }
+        });
 
     }
     private void getData(Activity activity){
@@ -264,7 +323,11 @@ public class MenuFragment extends Fragment {
             rpmValue =(double) mainActivity.getDataMain("RPM");
                     RPM.setText(String.valueOf(rpmValue));
             powerValue =(double) mainActivity.getDataMain("POWER");
-                    POWER.setText(String.valueOf(powerValue));
+                POWER.setText(String.valueOf(powerValue));
+            powerCoefficientValue =(double) mainActivity.getDataMain("POWER COEFFICIENT");
+                POWERCOEFFICIENT.setText(String.valueOf(powerCoefficientValue));
+            noiseCoefficientValue =(double) mainActivity.getDataMain("NOISE");
+                NOISE.setText(String.valueOf(noiseCoefficientValue));
             bearingValue =(int) mainActivity.getDataMain("BEARING");
                     BEARING.setText(String.valueOf(bearingValue));
 

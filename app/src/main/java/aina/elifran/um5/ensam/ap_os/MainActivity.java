@@ -23,6 +23,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+
 import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.PanZoom;
@@ -38,8 +41,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity implements SensorEventListener, MenuFragment.OnDataChangeListener,dataAnalyse.analyseDoneListener {
-    int couter = 0;
+import aina.elifran.um5.ensam.ap_os.placeholder.velocityTracking;
+
+
+public class MainActivity extends AppCompatActivity implements SensorEventListener, MenuFragment.OnDataChangeListener,dataAnalyse.analyseDoneListener, velocityTracking.velocityTrackingInterface {
+    int counter = 0;
     private final double vibrationConstante = 0.285;
     private TextView OutputX, OutputY, OutputZ,data_output_label,analyse_result;
     private Button button_stop,button_param;
@@ -58,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private boolean flag = false, flag2 = false, s_flag, ready = false,filterStatus = false;
     private fft fftdata;
     private boolean[] switchConfiguration;
-    private double rpmConfiguration = 1500 ,powerConfiguration = 15;
+    private double rpmConfiguration = 1500 ,powerConfiguration = 15, powerCoefficientConfiguration = 10E+0, noiseCoefficientConfiguration = -140;
     private int bearingConfiguration = 12;
     private double samplingFrequency;
     private double[][] maxFrequency;
@@ -71,6 +77,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     boolean analyseData = false;
     int analyseBuffer = 2048*16;
     dataAnalyse dataAnalyseVar;
+    velocityTracking velocityTracking;
+    boolean trackVelocity;
     @SuppressLint({"MissingInflatedId", "CutPasteId"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,6 +117,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         doplotHandler = new Handler(Objects.requireNonNull(Looper.myLooper()));
         doprintHandler = new Handler(Objects.requireNonNull(Looper.myLooper()));
 
+        velocityTracking = new velocityTracking(getApplicationContext());
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         OutputSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -148,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             data_sensor_array[0][0] =event.values[0];
             data_sensor_array[1][0] =event.values[1];
             data_sensor_array[2][0] =event.values[2];
-                if(couter > data_leingh*2 + 1){
+                if(counter > data_leingh*1.2){
                     if(!filterStatus){
                         Xfilterdata = new filter(filterOrder, samplingFrequency,cutOffFrequency* samplingFrequency);
                         Yfilterdata = new filter(filterOrder, samplingFrequency,cutOffFrequency* samplingFrequency);
@@ -156,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         filterStatus = true;        // avoid recreation of the filter class
                         Toast.makeText(getApplicationContext(), "filter initialized at Fe :" + samplingFrequency + "Hz", Toast.LENGTH_LONG).show();
 
-                        dataAnalyseVar = new dataAnalyse(analyseBuffer, samplingFrequency,rpmConfiguration,powerConfiguration,bearingConfiguration,switchConfiguration);
+                        dataAnalyseVar = new dataAnalyse(analyseBuffer, samplingFrequency,rpmConfiguration,powerConfiguration,bearingConfiguration,switchConfiguration, powerCoefficientConfiguration,noiseCoefficientConfiguration);
                         dataAnalyseVar.setAnalyseDoneListener(this);
 
                     }
@@ -165,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         ready = true;}
                 }
                 else {
-                    couter++;
+                    counter++;
                 }
         }
         if(data_counter > data_leingh/print_scale) {
@@ -204,10 +213,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setConfiguration();
 }
 
-    // Implémenter la méthode onDataChanged pour modifier les données dans l'activité
+    // Implémenter la méthode onDataChanged pour modifier les données dans l'activité------------------------------------------------------------------------*/
     @Override
     public void onDataChanged(Object newData) {
-
         if(newData instanceof data){
             data data= (data) newData;
             switch (data.getId()){
@@ -223,6 +231,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 case "BEARING" :
                     bearingSetting((int)data.getValue());
                     break;
+                case "POWER COEFFICIENT" :
+                    powerCoefficientSetting((double)data.getValue());
+                    break;
+                case "NOISE" :
+                    noiseCoefficientSetting((double)data.getValue());
+                    break;
                 default:
                     break;
             }
@@ -233,6 +247,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             sendDataPreferences();
             Toast.makeText(getApplicationContext(),"Configuration Saved", Toast.LENGTH_SHORT).show();
     }
+    @Override
+    public void trackData(double rpm) {
+        closeSetting();
+        rpmConfiguration = rpm;
+        trackVelocity = true;
+
+    }
+
     public Object getDataMain(String Id){
         Object Value = null;
         switch (Id){
@@ -248,6 +270,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             case "BEARING":
                 Value = bearingConfiguration;
                 break;
+            case "POWER COEFFICIENT":
+                Value = powerCoefficientConfiguration;
+                break;
+                case "NOISE":
+                Value = noiseCoefficientConfiguration;
+                break;
+
             default:
                 break;
         }
@@ -414,6 +443,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void rpmSetting(double rpmData){
         rpmConfiguration = rpmData;
     }
+    private void noiseCoefficientSetting(double noiseData){
+        noiseCoefficientConfiguration = noiseData;
+    }
+    private void powerCoefficientSetting(double powerCoeffData){
+        powerCoefficientConfiguration = powerCoeffData;
+    }
     private void powerSetting(double powerData){
         powerConfiguration = powerData;
     }
@@ -433,9 +468,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             data_fft_array[0] = fftdata.getLogtfft(toAc(data_sensor_array[0]));
             data_fft_array[1] = fftdata.getLogtfft(toAc(data_sensor_array[1]));
             data_fft_array[2] = fftdata.getLogtfft(toAc(data_sensor_array[2]));
+
+            if (trackVelocity){
+                velocityTracking.addDataTrack(data_fft_array[0],data_fft_array[1],data_fft_array[2],samplingFrequency);
+            }
+
+
             maxFrequency[0] = getMax(data_fft_array[0]);
             maxFrequency[1] = getMax(data_fft_array[1]);
             maxFrequency[2] = getMax(data_fft_array[2]);
+
         }
     };
     private final Runnable data_plot1 = new Runnable() {
@@ -554,12 +596,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 switch (entry.getKey()){
                     case "rpmConfiguration":
                         rpmConfiguration = (double)((float)entry.getValue());
+                        velocityTracking.setEstimatedVelocity(rpmConfiguration);
                         break;
                     case "powerConfiguration":
                         powerConfiguration = (double) ((float)entry.getValue());
+
                         break;
                     case "bearingConfiguration":
                         bearingConfiguration = (int)entry.getValue();
+                        break;
+                    case "noiseCoefficientConfiguration":
+                        noiseCoefficientConfiguration = (double)(float)entry.getValue();
+                        break;
+                    case "powerCoefficientConfiguration":
+                        powerCoefficientConfiguration = (double)(float)entry.getValue();
                         break;
                     case "SW1":
                         switchConfiguration[0]= (boolean)entry.getValue();
@@ -590,6 +640,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         preferences.writePreferences(getApplicationContext(),"rpmConfiguration",rpmConfiguration);
         preferences.writePreferences(getApplicationContext(),"powerConfiguration",powerConfiguration);
         preferences.writePreferences(getApplicationContext(),"bearingConfiguration",bearingConfiguration);
+        preferences.writePreferences(getApplicationContext(),"noiseCoefficientConfiguration",noiseCoefficientConfiguration);
+        preferences.writePreferences(getApplicationContext(),"powerCoefficientConfiguration",powerCoefficientConfiguration);
+
         preferences.writePreferences(getApplicationContext(),"SW1",switchConfiguration[0]);
         preferences.writePreferences(getApplicationContext(),"SW2",switchConfiguration[1]);
         preferences.writePreferences(getApplicationContext(),"SW3",switchConfiguration[2]);
@@ -598,7 +651,30 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         preferences.writePreferences(getApplicationContext(),"SW6",switchConfiguration[5]);
     }
 
-    /*--------------------------------------------------------------------------------not used function ----------------------------------------------------------*/
+    /*------------------------------------------------------------------------------- velocity tracking manual------------------------------------------------------*/
+    @Override
+    public void velocityResult(List<List<DataPoint>> returnValue) {
+        // function i will define -----  /
+        velocityTrackResultSend(returnValue);
+    }
+    public void velocityTrackResultSend(List<List<DataPoint>> returnValue){
+        TrackVelocity.velocityTrackResul(returnValue);
+    }
+
+    /*--------------------------------------------------------------------------------open velocity tyracking-----------------------------------------------------*/
+    private void closeSetting(){
+        // Begin the transaction for Fragment1
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction1 = fragmentManager.beginTransaction();
+        BlankFragment fragment1 = new BlankFragment();
+        fragmentTransaction1.replace(R.id.fragmentContainer, fragment1);
+        fragmentTransaction1.commit();
+        FragmentTransaction fragmentTransaction2 = fragmentManager.beginTransaction();
+        TrackVelocity fragment2 = new TrackVelocity();
+        fragmentTransaction2.replace(R.id.fragmentContainerVelocity, fragment2);
+        fragmentTransaction2.commit();
+    }
+    /*--------------------------------------------------------------------------------not used function -----------------------------------------------------------*/
     private final Runnable data_plot = new Runnable() {
         @Override
         public void run() {
@@ -655,6 +731,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             data_output.redraw(); // Refresh the plot
         }
     };
+
 
 }
 
