@@ -41,7 +41,7 @@ public class MenuFragment extends Fragment {
     private ViewGroup menu_layout;
     private FloatingActionButton setting_button;
     private Button confirm_button;
-    private Switch SW1,SW2,SW3,SW4,SW5;
+    private Switch SW1,SW2,SW3,SW4,SW5,SW6;
     private EditText RPM,POWER,BEARING;
     private String mParam1;
     private String mParam2;
@@ -92,6 +92,7 @@ public class MenuFragment extends Fragment {
         SW3 = view.findViewById(R.id.switch3);
         SW4 = view.findViewById(R.id.switch4);
         SW5 = view.findViewById(R.id.switch5);
+        SW6 = view.findViewById(R.id.switch6);
 
         getData(activity);
         onClick();
@@ -180,6 +181,11 @@ public class MenuFragment extends Fragment {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 SwitchValue[4]= isChecked;
             }});
+        SW6.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                SwitchValue[5]= isChecked;
+            }});
 
     }
     private void onChange() {
@@ -244,51 +250,6 @@ public class MenuFragment extends Fragment {
             }
         });
 
-        /*RPM.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus) {
-                    String rpmText = RPM.getText().toString(); // Get the text entered in POWER view
-                    if (!rpmText.isEmpty()) { // Check if the text is not empty
-                        try {
-                            rpmValue = Double.parseDouble(rpmText); // Convert text to float
-                        } catch (NumberFormatException e) {
-                            rpmValue = 0.0; // Convert text to float
-                        }
-                    }
-                }
-            }
-        });
-        POWER.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus) {
-                    String powerText = POWER.getText().toString(); // Get the text entered in POWER view
-                    if (!powerText.isEmpty()) { // Check if the text is not empty
-                        try {
-                            powerValue = Double.parseDouble(powerText); // Convert text to float
-                        } catch (NumberFormatException e) {
-                            powerValue = 0.0;
-                        }
-                    }
-                }
-            }
-        });
-        BEARING.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus) {
-                    String bearingText = BEARING.getText().toString(); // Get the text entered in POWER view
-                    if (!bearingText.isEmpty()) { // Check if the text is not empty
-                        try {
-                            bearingValue = Integer.parseInt(bearingText); // Convert text to float
-                        } catch (NumberFormatException e) {
-                            bearingValue = 0;
-                        }
-                    }
-                }
-            }
-        });*/
     }
     private void getData(Activity activity){
         if(activity instanceof MainActivity){
@@ -299,6 +260,7 @@ public class MenuFragment extends Fragment {
                     SW3.setChecked(SwitchValue[2]);
                     SW4.setChecked(SwitchValue[3]);
                     SW5.setChecked(SwitchValue[4]);
+                    SW6.setChecked(SwitchValue[5]);
             rpmValue =(double) mainActivity.getDataMain("RPM");
                     RPM.setText(String.valueOf(rpmValue));
             powerValue =(double) mainActivity.getDataMain("POWER");

@@ -6,7 +6,9 @@
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".MenuFragment">
-
+<ScrollView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
     <RelativeLayout
 
         android:id="@+id/menu_layout"
@@ -164,7 +166,27 @@
                     android:layout_alignParentLeft="true"
                     android:layout_alignParentEnd="true"
                     android:layout_alignParentRight="true"
-                    android:layout_weight="1"
+                    tools:ignore="UseSwitchCompatOrMaterialXml" />
+                <TextView
+                    android:id="@+id/check6_lablel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/switch5"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_toStartOf="@+id/switch6"
+                    android:layout_toLeftOf="@+id/switch6"
+                    android:gravity="left"
+                    android:text="Cushions default" />
+
+                <Switch
+                    android:id="@+id/switch6"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/switch5"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
                     tools:ignore="UseSwitchCompatOrMaterialXml" />
             </RelativeLayout>
 
@@ -308,4 +330,6 @@
 
 
     </RelativeLayout>
+</ScrollView>
+
 </FrameLayout>

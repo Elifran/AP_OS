@@ -36,6 +36,7 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener, MenuFragment.OnDataChangeListener,dataAnalyse.analyseDoneListener {
     int couter = 0;
@@ -52,15 +53,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private final int print_scale = 512;
     private volatile double[][] data_sensor_array;
     private volatile  double[][] data_fft_array;
-    public static long act_timstamp,last_timstamp,step_time;
-    private static int data_couter = 0;
+    public static long act_timestamp, last_timestamp,step_time;
+    private static int data_counter = 0;
     private boolean flag = false, flag2 = false, s_flag, ready = false,filterStatus = false;
-    private fft ffftdata;
+    private fft fftdata;
     private boolean[] switchConfiguration;
     private double rpmConfiguration = 1500 ,powerConfiguration = 15;
     private int bearingConfiguration = 12;
-    private double samplingfrequency;
-    private double[][] maxfreq;
+    private double samplingFrequency;
+    private double[][] maxFrequency;
     private filter Xfilterdata;
     private filter Yfilterdata;
     private filter Zfilterdata;
@@ -70,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     boolean analyseData = false;
     int analyseBuffer = 2048*16;
     dataAnalyse dataAnalyseVar;
-    @SuppressLint("MissingInflatedId")
+    @SuppressLint({"MissingInflatedId", "CutPasteId"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -100,13 +101,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         data_sensor_array = new double[4][data_leingh];
         data_fft_array = new double[4][data_leingh];
-        ffftdata = new fft(data_leingh);
-        maxfreq = new double[3][2];
-        switchConfiguration = new boolean[5];
+        fftdata = new fft(data_leingh);
+        maxFrequency = new double[3][2];
+        switchConfiguration = new boolean[10];
 
-        dofftHandler = new Handler(Looper.myLooper());
-        doplotHandler = new Handler(Looper.myLooper());
-        doprintHandler = new Handler(Looper.myLooper());
+        dofftHandler = new Handler(Objects.requireNonNull(Looper.myLooper()));
+        doplotHandler = new Handler(Objects.requireNonNull(Looper.myLooper()));
+        doprintHandler = new Handler(Objects.requireNonNull(Looper.myLooper()));
 
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -119,28 +120,28 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setConfiguration();
 
             }
+    @SuppressLint("SetTextI18n")
     @Override
     public void onSensorChanged(@NonNull SensorEvent event) {
         float[] actSensorValues = event.values.clone();
-        act_timstamp = (event.timestamp)/1000000; // in millisecond
-        step_time = act_timstamp - last_timstamp;
-        data_couter+=1;
+        act_timestamp = (event.timestamp)/1000000; // in millisecond
+        step_time = act_timestamp - last_timestamp;
+        data_counter +=1;
         shiftRight(data_sensor_array,step_time);
         data_sensor_array[3][0] = step_time;
-        last_timstamp = act_timstamp;
+        last_timestamp = act_timestamp;
         if (ready){
-            data_sensor_array[0][0] =(float)(Xfilterdata.filterData(actSensorValues[0]));
-            data_sensor_array[1][0] =(float)(Yfilterdata.filterData(actSensorValues[1]));
-            data_sensor_array[2][0] =(float)(Zfilterdata.filterData(actSensorValues[2]));
-            if (analyseData){
-                dataAnalyseVar.addData(data_sensor_array[0][0],step_time);  // asume that we analyse the first vibration data
+            data_sensor_array[0][0] =(double) (Yfilterdata.filterData(actSensorValues[0]));
+            data_sensor_array[1][0] =(double) (Yfilterdata.filterData(actSensorValues[1]));
+            data_sensor_array[2][0] =(double) (Zfilterdata.filterData(actSensorValues[2]));
+            if (analyseData){ // trying to  analyse the absolute value of the vibration from x,y and z
+                dataAnalyseVar.addData(Math.sqrt(Math.pow(Xfilterdata.filterData(actSensorValues[0]), 2) + Math.pow(Xfilterdata.filterData(actSensorValues[1]), 2) + Math.pow(Xfilterdata.filterData(actSensorValues[2]), 2)),step_time);  // asume that we analyse the first vibration data
             }
-            if(     (Xfilterdata.isConfigChange(samplingfrequency,cutOffFrequency*samplingfrequency) ||
-                    Yfilterdata.isConfigChange(samplingfrequency,cutOffFrequency*samplingfrequency) ||
-                    Xfilterdata.isConfigChange(samplingfrequency,cutOffFrequency*samplingfrequency) ) && flag){
-                dataAnalyseVar.setConfig("SAMPLING FREQ",samplingfrequency);
+            if(     (Xfilterdata.isConfigChange(samplingFrequency,cutOffFrequency* samplingFrequency) ||
+                    Yfilterdata.isConfigChange(samplingFrequency,cutOffFrequency* samplingFrequency) ||
+                    Xfilterdata.isConfigChange(samplingFrequency,cutOffFrequency* samplingFrequency) ) && flag){
+                dataAnalyseVar.setConfig("SAMPLING FREQ", samplingFrequency);
                 //Toast.makeText(getApplicationContext(), "Configuration filter Have been Changed", Toast.LENGTH_LONG).show();
-
             }
         }
         else {
@@ -149,13 +150,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             data_sensor_array[2][0] =event.values[2];
                 if(couter > data_leingh*2 + 1){
                     if(!filterStatus){
-                        Xfilterdata = new filter(filterOrder,samplingfrequency,cutOffFrequency*samplingfrequency);
-                        Yfilterdata = new filter(filterOrder,samplingfrequency,cutOffFrequency*samplingfrequency);
-                        Zfilterdata = new filter(filterOrder,samplingfrequency,cutOffFrequency*samplingfrequency);
+                        Xfilterdata = new filter(filterOrder, samplingFrequency,cutOffFrequency* samplingFrequency);
+                        Yfilterdata = new filter(filterOrder, samplingFrequency,cutOffFrequency* samplingFrequency);
+                        Zfilterdata = new filter(filterOrder, samplingFrequency,cutOffFrequency* samplingFrequency);
                         filterStatus = true;        // avoid recreation of the filter class
-                        Toast.makeText(getApplicationContext(), "filter initialized at Fe :" + samplingfrequency + "Hz", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), "filter initialized at Fe :" + samplingFrequency + "Hz", Toast.LENGTH_LONG).show();
 
-                        dataAnalyseVar = new dataAnalyse(analyseBuffer,samplingfrequency,rpmConfiguration,powerConfiguration,bearingConfiguration,switchConfiguration);
+                        dataAnalyseVar = new dataAnalyse(analyseBuffer, samplingFrequency,rpmConfiguration,powerConfiguration,bearingConfiguration,switchConfiguration);
                         dataAnalyseVar.setAnalyseDoneListener(this);
 
                     }
@@ -167,13 +168,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     couter++;
                 }
         }
-        if(data_couter > data_leingh/print_scale) {
+        if(data_counter > data_leingh/print_scale) {
             if (flag && ready) {
                 dofftHandler.post(getfftAbs);
                 //doplotHandler.post(data_plot);   //doplotHandler in other way
                 doplotHandler.post(data_plot1);   //doplotHandler in other way
             }
-            data_couter = 0;
+            data_counter = 0;
             doplotHandler.post(print_data);      //doprintHandler in other way
         }
 }
@@ -265,6 +266,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
         button_param.setOnClickListener(new View.OnClickListener(){
+            @SuppressLint("SetTextI18n")
             public void onClick(View view) {
                 if (!ready) {
                     Toast.makeText(getApplicationContext(), "Not Ready Yet", Toast.LENGTH_SHORT).show();
@@ -273,7 +275,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }else {
                     button_param.setText(" READY TO GET DATA");
                     analyse_result.setText("Ready to get Data \n");
-                    if (!dataAnalyseVar.isAnalizing()){
+                    if (!dataAnalyseVar.isAnalyzing()){
                         analyseData = true;
                         button_param.setText("COLLECTING DATA ...");
                         analyse_result.setText("Collecting data\nWAIT ...");
@@ -282,7 +284,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         }
                         else{
                             Toast.makeText(getApplicationContext(), "Analyse Begin", Toast.LENGTH_SHORT).show();
-                            button_param.setText("ANALISING ...");
+                            button_param.setText("ANALYSING ...");
                             analyse_result.setText("Analysing the data\nWAIT" );
                             analyseData = false;
                         }
@@ -368,16 +370,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         chart_params.height = (int)(height - control_layout.getMeasuredHeight()- height*0.01);
         chart_params.width = width;
         chart_layout.setLayoutParams(chart_params);
-        //Toast.makeText(getApplicationContext(), data_output_label.getMeasuredHeight() , Toast.LENGTH_SHORT).show();
 
         // control layout params
         data_output1_params.height = (int)(height - control_layout.getMeasuredHeight() - data_output_label.getMeasuredHeight() - height*0.01);
         data_output1_params.width = width;
         data_output1.setLayoutParams(data_output1_params);
-        // control layout params
-        //data_output_params.height = (int)(height - control_layout.getMeasuredHeight() - data_output_label.getMeasuredHeight() - height*0.01);
-        //data_output_params.width = width;
-        //data_output.setLayoutParams(data_output_params);
 }
     public double[] toAc(@NonNull double[] data){
         double[] temp = data.clone();
@@ -408,7 +405,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             array[3][i] = array[3][i-1] + timestamp;
         }
         array[3][0] = 0;
-        samplingfrequency = 1000*data_leingh/data_sensor_array[3][data_leingh-1];
+        samplingFrequency = 1000*data_leingh/data_sensor_array[3][data_leingh-1];
     }
 
     private void switchSetting(boolean[] switchData){
@@ -427,18 +424,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private final Runnable  getfftAbs = new Runnable() {
         @Override
         public void run() {
-            double resolution = samplingfrequency/data_leingh;
+            double resolution = samplingFrequency /data_leingh;
             for (int i = 0;i<data_leingh;i++){
                 //data_fft_array[3][i+1] = data_sensor_array[3][i+1];
                 data_fft_array[3][i] = resolution*i;
             }
             //data_fft_array[3][0] = 0;
-            data_fft_array[0] = ffftdata.getLogtfft(toAc(data_sensor_array[0]));
-            data_fft_array[1] = ffftdata.getLogtfft(toAc(data_sensor_array[1]));
-            data_fft_array[2] = ffftdata.getLogtfft(toAc(data_sensor_array[2]));
-            maxfreq[0] = getMax(data_fft_array[0]);
-            maxfreq[1] = getMax(data_fft_array[1]);
-            maxfreq[2] = getMax(data_fft_array[2]);
+            data_fft_array[0] = fftdata.getLogtfft(toAc(data_sensor_array[0]));
+            data_fft_array[1] = fftdata.getLogtfft(toAc(data_sensor_array[1]));
+            data_fft_array[2] = fftdata.getLogtfft(toAc(data_sensor_array[2]));
+            maxFrequency[0] = getMax(data_fft_array[0]);
+            maxFrequency[1] = getMax(data_fft_array[1]);
+            maxFrequency[2] = getMax(data_fft_array[2]);
         }
     };
     private final Runnable data_plot1 = new Runnable() {
@@ -504,10 +501,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             OutputZ.setText(String.valueOf(data_sensor_array[2][0]));
             data_output_label.setText("");
             data_output_label.append(
-                    "X : f : " + maxfreq[0][1] + "Hz, v : " + maxfreq[0][0] + "dB" + "\n" +
-                            "Y : f : " + maxfreq[1][1] + "Hz, v : " + maxfreq[1][0] + "dB" + "\n" +
-                            "Z : f : " + maxfreq[2][1] + "Hz, v : " + maxfreq[2][0] + "dB" + "\n" +
-                            "Fe : " + samplingfrequency + "Hz");
+                    "X : f : " + maxFrequency[0][1] + "Hz, v : " + maxFrequency[0][0] + "dB" + "\n" +
+                            "Y : f : " + maxFrequency[1][1] + "Hz, v : " + maxFrequency[1][0] + "dB" + "\n" +
+                            "Z : f : " + maxFrequency[2][1] + "Hz, v : " + maxFrequency[2][0] + "dB" + "\n" +
+                            "Fe : " + samplingFrequency + "Hz");
             if (!flag2) {
                 setConfiguration();
                 flag2 = true;
@@ -524,12 +521,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     //data analyse listener implementation
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void analyseDone(boolean status) {
 
         button_param.setText("DONE - ANALYSE");
         Toast.makeText(getApplicationContext(), "Analyse Done", Toast.LENGTH_SHORT).show();
     }
+    @SuppressLint("SetTextI18n")
     @Override
     public void analyseResult(List<data> result) {
         analyse_result.setText("The result is : \n");
@@ -539,6 +538,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             button_param.setText("RE-DO - ANALYSE");
         }
     }
+    @SuppressLint("SetTextI18n")
     @Override
     public void analysePossible() {
         analyseData = false;                        //stop collecting data
@@ -547,7 +547,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Toast.makeText(getApplicationContext(), "Analyse Possible now", Toast.LENGTH_SHORT).show();
     }
 
-    /*--------------------------------------------------------------------------------save/get preferencies ----------------------------------------------------------*/
+    /*--------------------------------------------------------------------------------save/get preferences ----------------------------------------------------------*/
     private void parseDataPreferences(Map<String,?> dataSaved){
         if(dataSaved != null){
             for (Map.Entry<String, ?> entry : dataSaved.entrySet()) {
@@ -576,6 +576,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     case "SW5":
                         switchConfiguration[4]= (boolean)entry.getValue();
                         break;
+                    case "SW6":
+                        switchConfiguration[5]= (boolean)entry.getValue();
+                        break;
+
                     default:
                         break;
                 }
@@ -591,6 +595,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         preferences.writePreferences(getApplicationContext(),"SW3",switchConfiguration[2]);
         preferences.writePreferences(getApplicationContext(),"SW4",switchConfiguration[3]);
         preferences.writePreferences(getApplicationContext(),"SW5",switchConfiguration[4]);
+        preferences.writePreferences(getApplicationContext(),"SW6",switchConfiguration[5]);
     }
 
     /*--------------------------------------------------------------------------------not used function ----------------------------------------------------------*/
