@@ -8,16 +8,14 @@ import androidx.annotation.NonNull;
 import com.jjoe64.graphview.series.DataPoint;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
 
 public class dataAnalyse {
     private double samplingFrequency, rpmConfiguration, powerConfiguration;
-    private final double powerCoefficient = 15E+0;  // the vibration amplitude coefficient
-    private final double significativeValue = 1E-9; // frequency outside the noise
+    private double powerCoefficientConfiguration = 15E+0;  // the vibration amplitude coefficient
+    private double noiseCoefficientConfiguration = 1E-6; // frequency outside the noise
     private final double coeffValue = 2; // frequency pic identification
     private final double frequencyShift = 1E-1; //
     private static int bearingConfiguration;
@@ -41,13 +39,18 @@ public class dataAnalyse {
                 double rpm_Configuration,
                 double power_Configuration,
                 int bearing_Configuration,
-                boolean[] switch_Configuration) {
+                boolean[] switch_Configuration,
+                double noise_Coefficient_Configuration,
+                double power_Coefficient_Configuration
+                ) {
         data_buffer = buffer;
         samplingFrequency = sampling_frequency;
         rpmConfiguration = rpm_Configuration;
         powerConfiguration = power_Configuration;
         bearingConfiguration = bearing_Configuration;
         switchConfiguration = switch_Configuration.clone();
+        powerCoefficientConfiguration = Math.pow(10,power_Coefficient_Configuration);
+        noiseCoefficientConfiguration = noise_Coefficient_Configuration;
 
         // initialize all array :
         dataMesureArray = new double[data_buffer];
@@ -66,6 +69,12 @@ public class dataAnalyse {
                 break;
             case "RPM":
                 rpmConfiguration = (double) Value;
+                break;
+            case "POWER COEFFICIENT":
+                powerCoefficientConfiguration = (double) Value;
+                break;
+            case "NOISE":
+                noiseCoefficientConfiguration =Math.pow(10,(double)Value);
                 break;
             case "POWER":
                 powerConfiguration = (double) Value;
@@ -142,35 +151,30 @@ public class dataAnalyse {
         public void run() {
             analyseResultData.clear();
             int freqShift = (int) (data_buffer * frequencyShift / samplingFrequency);         //  shift frequency
-            dataFftArray = cloneTrounce(dataAnalyseFft.getAbsfft(dataMesureArray.clone()),0.5); // get the absolute value of the fft
-            dataFrequencysignificantArray = findSignificantPeaks(dataFftArray, samplingFrequency, coeffValue, significativeValue);
+            dataFftArray = cloneTrounce(dataAnalyseFft.getAbsfft(toAc(dataMesureArray.clone())),0.5); // get the absolute value of the fft
+            dataFrequencysignificantArray = findSignificantPeaks(dataFftArray, samplingFrequency, noiseCoefficientConfiguration, coeffValue);
             List<DataPoint> dataFrequencyMultiple = dataFrequencyMultiple(dataFrequencysignificantArray, rpmConfiguration / 60.0);
             List<DataPoint> dataFrequencyMultiplebyhalf = dataFrequencyMultipleHalf(dataFrequencysignificantArray, rpmConfiguration / 60.0);
             List<DataPoint> dataFrequencyMultiplebyBearing = dataFrequencyMultipleBearing(dataFrequencysignificantArray, rpmConfiguration / 60.0);
-            /*Collections.sort(dataFrequencyMultiple, new Comparator<DataPoint>() {
-                @Override
-                public int compare(DataPoint point1, DataPoint point2) {
-                    return Double.compare(point1.getX(), point2.getX());
-                }
-            });*/
+            analyseResultData.add(new data("Number Of Pic Frequency : ", dataFrequencysignificantArray.size()));
 
             /*______________________________________________ static default _________________________________________*/
             if (switchConfiguration[0]) {     // static vibration unbalanced
                 int freqCentred = (int) (data_buffer * rpmConfiguration / (60 * 2 * samplingFrequency));
                 double[] data1 = getMaxAnalyse(dataFftArray, freqCentred - freqShift, freqCentred + freqShift);
-                analyseResultData.add(new data("Static Vibration State ----> ", data1[0] * powerCoefficient / powerConfiguration));
+                analyseResultData.add(new data("Static Vibration State ----> ", data1[0] * powerCoefficientConfiguration / powerConfiguration));
             }
             /*_____________________________________________ dynamic default _________________________________________*/
             if (switchConfiguration[1]) {     //dynamic vibration unbalanced
                 int freqCentred = (int) (data_buffer * rpmConfiguration / (60 * samplingFrequency));
                 double[] data1 = getMaxAnalyse(dataFftArray, freqCentred - freqShift, freqCentred + freqShift);
-                analyseResultData.add(new data("Dynamic Vibration State ---> ", data1[0] * powerCoefficient / powerConfiguration));
+                analyseResultData.add(new data("Dynamic Vibration State ---> ", data1[0] * powerCoefficientConfiguration / powerConfiguration));
             }
             /*______________________________________________ magnet default _________________________________________*/
             if (switchConfiguration[4]) {     //electrical or mechanical default
                 int freqCentred = (int) (50);
                 double[] data1 = getMaxAnalyse(dataFftArray, freqCentred - freqShift, freqCentred + freqShift);
-                analyseResultData.add(new data("Bobine State --------------> ", data1[0] * powerCoefficient / powerConfiguration));
+                analyseResultData.add(new data("Bobine State --------------> ", data1[0] * powerCoefficientConfiguration / powerConfiguration));
             }
             /*__________________________________________ mechanical  looseness ______________________________________*/
             if (switchConfiguration[2]) {     //mechanical looseness : presented by harmonic 0.5 of the main freuqency
@@ -179,7 +183,7 @@ public class dataAnalyse {
                     Temp += data.getY();
                 }
                 Temp /= dataFrequencyMultiplebyhalf.isEmpty() ? 1 : dataFrequencyMultiplebyhalf.size();
-                analyseResultData.add(new data("Looseness default State -----> ", Temp *  powerCoefficient / powerConfiguration));
+                analyseResultData.add(new data("Looseness default State -----> ", Temp * powerCoefficientConfiguration / powerConfiguration));
             }
             /*______________________________________________ bearing default _________________________________________*/
             if (switchConfiguration[3]) {     //bearing fault
@@ -189,7 +193,7 @@ public class dataAnalyse {
                     Temp += data.getY();
                 }
                 Temp /= dataFrequencyMultiplebyBearing.isEmpty() ? 1 : dataFrequencyMultiplebyBearing.size();
-                analyseResultData.add(new data("Bearing default State -----> ", Temp * powerCoefficient / powerConfiguration));
+                analyseResultData.add(new data("Bearing default State -----> ", Temp * powerCoefficientConfiguration / powerConfiguration));
             }
 
             /*______________________________________________ cushions default _________________________________________*/
@@ -199,7 +203,7 @@ public class dataAnalyse {
                     Temp += data.getY();
                 }
                 Temp /= dataFrequencyMultiple.isEmpty() ? 1 : dataFrequencyMultiple.size();
-                analyseResultData.add(new data("Cushions State -------------> ", Temp * powerCoefficient / powerConfiguration));
+                analyseResultData.add(new data("Cushions State -------------> ", Temp * powerCoefficientConfiguration / powerConfiguration));
             }
 
 
@@ -283,4 +287,14 @@ public class dataAnalyse {
         return resultData;
     }
 
+    public double[] toAc(@NonNull double[] data){
+        double[] temp = data.clone();
+        double val = 0;
+        for (double datum : data) val = val + datum;
+        val = val/(data.length);
+        for (int i = 0;i<data.length;i++) {
+            temp[i] = data[i] - val;
+        }
+        return temp;
+    }
 }

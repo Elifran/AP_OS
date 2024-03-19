@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private boolean flag = false, flag2 = false, s_flag, ready = false,filterStatus = false;
     private fft fftdata;
     private boolean[] switchConfiguration;
-    private double rpmConfiguration = 1500 ,powerConfiguration = 15;
+    private double rpmConfiguration = 1500 ,powerConfiguration = 15, powerCoefficientConfiguration = 10E+0, noiseCoefficientConfiguration = -140;
     private int bearingConfiguration = 12;
     private double samplingFrequency;
     private double[][] maxFrequency;
@@ -156,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         filterStatus = true;        // avoid recreation of the filter class
                         Toast.makeText(getApplicationContext(), "filter initialized at Fe :" + samplingFrequency + "Hz", Toast.LENGTH_LONG).show();
 
-                        dataAnalyseVar = new dataAnalyse(analyseBuffer, samplingFrequency,rpmConfiguration,powerConfiguration,bearingConfiguration,switchConfiguration);
+                        dataAnalyseVar = new dataAnalyse(analyseBuffer, samplingFrequency,rpmConfiguration,powerConfiguration,bearingConfiguration,switchConfiguration, powerCoefficientConfiguration,noiseCoefficientConfiguration);
                         dataAnalyseVar.setAnalyseDoneListener(this);
 
                     }
@@ -223,6 +223,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 case "BEARING" :
                     bearingSetting((int)data.getValue());
                     break;
+                case "POWER COEFFICIENT" :
+                    powerCoefficientSetting((double)data.getValue());
+                    break;
+                case "NOISE" :
+                    noiseCoefficientSetting((double)data.getValue());
+                    break;
                 default:
                     break;
             }
@@ -248,6 +254,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             case "BEARING":
                 Value = bearingConfiguration;
                 break;
+            case "POWER COEFFICIENT":
+                Value = powerCoefficientConfiguration;
+                break;
+                case "NOISE":
+                Value = noiseCoefficientConfiguration;
+                break;
+
             default:
                 break;
         }
@@ -414,6 +427,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void rpmSetting(double rpmData){
         rpmConfiguration = rpmData;
     }
+    private void noiseCoefficientSetting(double noiseData){
+        noiseCoefficientConfiguration = noiseData;
+    }
+    private void powerCoefficientSetting(double powerCoeffData){
+        powerCoefficientConfiguration = powerCoeffData;
+    }
     private void powerSetting(double powerData){
         powerConfiguration = powerData;
     }
@@ -561,6 +580,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     case "bearingConfiguration":
                         bearingConfiguration = (int)entry.getValue();
                         break;
+                    case "noiseCoefficientConfiguration":
+                        noiseCoefficientConfiguration = (double)(float)entry.getValue();
+                        break;
+                    case "powerCoefficientConfiguration":
+                        powerCoefficientConfiguration = (double)(float)entry.getValue();
+                        break;
                     case "SW1":
                         switchConfiguration[0]= (boolean)entry.getValue();
                         break;
@@ -590,6 +615,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         preferences.writePreferences(getApplicationContext(),"rpmConfiguration",rpmConfiguration);
         preferences.writePreferences(getApplicationContext(),"powerConfiguration",powerConfiguration);
         preferences.writePreferences(getApplicationContext(),"bearingConfiguration",bearingConfiguration);
+        preferences.writePreferences(getApplicationContext(),"noiseCoefficientConfiguration",noiseCoefficientConfiguration);
+        preferences.writePreferences(getApplicationContext(),"powerCoefficientConfiguration",powerCoefficientConfiguration);
+
         preferences.writePreferences(getApplicationContext(),"SW1",switchConfiguration[0]);
         preferences.writePreferences(getApplicationContext(),"SW2",switchConfiguration[1]);
         preferences.writePreferences(getApplicationContext(),"SW3",switchConfiguration[2]);

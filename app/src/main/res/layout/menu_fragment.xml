@@ -228,7 +228,43 @@
                     android:gravity="center"
                     android:text="[kW]           "/>
 
-            </RelativeLayout>
+            </RelativeLayout>            <RelativeLayout
+            android:id="@+id/powerCoefficient"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/powerCoefficientLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@+id/powerCoefficient_value"
+                android:layout_alignTop="@+id/powerCoefficient_value"
+                android:gravity="center"
+                android:text="Power coefficient      "
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                />
+            <EditText
+                android:id="@+id/powerCoefficient_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@+id/powerCoefficientLabel"
+                android:layout_toRightOf="@+id/powerCoefficientLabel"
+                android:layout_toStartOf="@+id/powerCoefficientIndice"
+                android:layout_toLeftOf="@+id/powerCoefficientIndice"
+                android:inputType="numberDecimal"
+                />
+            <TextView
+                android:id="@+id/powerCoefficientIndice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@+id/powerCoefficient_value"
+                android:layout_alignTop="@+id/powerCoefficient_value"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:gravity="center"
+                android:text="[NUMBER]"/>
+        </RelativeLayout>
+
             <RelativeLayout
                 android:id="@+id/velocity"
                 android:layout_width="wrap_content"
@@ -284,7 +320,6 @@
                     android:layout_alignParentStart="true"
                     android:layout_alignParentLeft="true"
                     />
-
                 <EditText
                     android:id="@+id/bearing_value"
                     android:layout_width="wrap_content"
@@ -307,6 +342,46 @@
                     android:text="[NUMBER]"/>
 
             </RelativeLayout>
+            <RelativeLayout
+                android:id="@+id/noise"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/noiseLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/noise_value"
+                    android:layout_alignTop="@+id/noise_value"
+                    android:gravity="center"
+                    android:text="noise coefficient       "
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentLeft="true"
+                    />
+
+                <EditText
+                    android:id="@+id/noise_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toEndOf="@+id/noiseLabel"
+                    android:layout_toRightOf="@+id/noiseLabel"
+                    android:layout_toStartOf="@+id/noiseIndice"
+                    android:layout_toLeftOf="@+id/noiseIndice"
+                    android:inputType="numberDecimal|numberSigned"
+                    />
+                <TextView
+                    android:id="@+id/noiseIndice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/noise_value"
+                    android:layout_alignTop="@+id/noise_value"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:gravity="center"
+                    android:text="[dB]           "/>
+
+            </RelativeLayout>
+
         </LinearLayout>
         <TextView
             android:id="@+id/confirm_button_label"
