@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import aina.elifran.um5.ensam.ap_os.placeholder.velocityTracking;
+import aina.elifran.um5.ensam.ap_os.velocityTracking;
 
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener, MenuFragment.OnDataChangeListener,dataAnalyse.analyseDoneListener, velocityTracking.velocityTrackingInterface {
@@ -77,8 +77,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     boolean analyseData = false;
     int analyseBuffer = 2048*16;
     dataAnalyse dataAnalyseVar;
-    velocityTracking velocityTracking;
     boolean trackVelocity;
+    velocityTracking velocityTracking;
     @SuppressLint({"MissingInflatedId", "CutPasteId"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,11 +113,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         maxFrequency = new double[3][2];
         switchConfiguration = new boolean[10];
 
+        velocityTracking = new velocityTracking(this);
+
         dofftHandler = new Handler(Objects.requireNonNull(Looper.myLooper()));
         doplotHandler = new Handler(Objects.requireNonNull(Looper.myLooper()));
         doprintHandler = new Handler(Objects.requireNonNull(Looper.myLooper()));
-
-        velocityTracking = new velocityTracking(getApplicationContext());
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         OutputSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -249,9 +249,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
     @Override
     public void trackData(double rpm) {
-        closeSetting();
         rpmConfiguration = rpm;
         trackVelocity = true;
+        closeSetting();
+        Toast.makeText(getApplicationContext(), "thing seted...?", Toast.LENGTH_LONG).show();
 
     }
 
@@ -472,8 +473,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             if (trackVelocity){
                 velocityTracking.addDataTrack(data_fft_array[0],data_fft_array[1],data_fft_array[2],samplingFrequency);
             }
-
-
             maxFrequency[0] = getMax(data_fft_array[0]);
             maxFrequency[1] = getMax(data_fft_array[1]);
             maxFrequency[2] = getMax(data_fft_array[2]);
@@ -659,6 +658,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
     public void velocityTrackResultSend(List<List<DataPoint>> returnValue){
         TrackVelocity.velocityTrackResul(returnValue);
+        //Toast.makeText(getApplicationContext(), "Good for result", Toast.LENGTH_LONG).show();
     }
 
     /*--------------------------------------------------------------------------------open velocity tyracking-----------------------------------------------------*/

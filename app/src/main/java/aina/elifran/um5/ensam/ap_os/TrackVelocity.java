@@ -1,10 +1,14 @@
 package aina.elifran.um5.ensam.ap_os;
 
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,6 +36,10 @@ public class TrackVelocity extends Fragment{
     private String mParam1;
     private String mParam2;
     private static RelativeLayout layout1,layout2,layout3;
+    private static Button l1B1,l1B2,l1B3,l1B4,l1B5;
+    private static Button l2B1,l2B2,l2B3,l2B4,l2B5;
+    private static Button l3B1,l3B2,l3B3,l3B4,l3B5;
+
     private TrackVelocity listener;
     public TrackVelocity() {
         // Required empty public constructor
@@ -77,6 +85,21 @@ public class TrackVelocity extends Fragment{
         layout1 = view.findViewById(R.id.layout1);
         layout2 = view.findViewById(R.id.layout1);
         layout3 = view.findViewById(R.id.layout1);
+        l1B1 = view.findViewById(R.id.layout1_button1);
+        l1B2 = view.findViewById(R.id.layout1_button2);
+        l1B3 = view.findViewById(R.id.layout1_button3);
+        l1B4 = view.findViewById(R.id.layout1_button4);
+        l1B5 = view.findViewById(R.id.layout1_button5);
+        l2B1 = view.findViewById(R.id.layout2_button1);
+        l2B2 = view.findViewById(R.id.layout2_button2);
+        l2B3 = view.findViewById(R.id.layout2_button3);
+        l2B4 = view.findViewById(R.id.layout2_button4);
+        l2B5 = view.findViewById(R.id.layout2_button5);
+        l3B1 = view.findViewById(R.id.layout3_button1);
+        l3B2 = view.findViewById(R.id.layout3_button2);
+        l3B3 = view.findViewById(R.id.layout3_button3);
+        l3B4 = view.findViewById(R.id.layout3_button4);
+        l3B5 = view.findViewById(R.id.layout3_button5);
     }
 
     public static void velocityTrackResul(List<List<DataPoint>> returnValue){
@@ -89,50 +112,99 @@ public class TrackVelocity extends Fragment{
     private static void setButonLayout(List<DataPoint> data, int number){
         switch (number){
             case 1:
-                putLayout(data,layout1);
+                putLayout1(data);
                 break;
             case 2:
-                putLayout(data,layout2);
+                putLayout2(data);
                 break;
             case 3:
-                putLayout(data,layout3);
+                putLayout3(data);
                 break;
             default:
                 break;
         }
     }
-    private static void putLayout(List<DataPoint> dataPointList, RelativeLayout layout){
-        Button previousButton = null;
-        for (DataPoint data : dataPointList){
-            Button button = new Button(layout.getContext());
-            button.setText(data.getX() + " : " + data.getY()); // Set button text based on DataPoint label
-            layout.addView(button);
-            button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    velocitySelected(data.getX());
-                }
-            });
-            // Set layout parameters for the button
-            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
-                    RelativeLayout.LayoutParams.WRAP_CONTENT,
-                    RelativeLayout.LayoutParams.WRAP_CONTENT
-            );
-
-            // Add rule to position the button below the previous one
-            if (previousButton != null) {
-                layoutParams.addRule(RelativeLayout.BELOW, previousButton.getId());
-            } else {
-                layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-            }
-            layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
-            button.setLayoutParams(layoutParams);
-            // Update previousButton reference
-            previousButton = button;
-        }
+    private static void putLayout1(List<DataPoint> dataPointList){
+        try {
+            l1B1.setText(String.valueOf(dataPointList.get(0).getX()) + "|" + dataPointList.get(0).getY());
+        }catch (Exception e){
+            l1B1.setText("Not defined");}
+        try {
+            l1B2.setText(String.valueOf(dataPointList.get(1).getX()) + "|" + dataPointList.get(1).getY());
+        }catch (Exception e){
+            l1B2.setText("Not defined");}
+        try {
+            l1B3.setText(String.valueOf(dataPointList.get(2).getX()) + "|" + dataPointList.get(2).getY());
+        }catch (Exception e){
+            l1B3.setText("Not defined");}
+        try {
+            l1B4.setText(String.valueOf(dataPointList.get(3).getX()) + "|" + dataPointList.get(3).getY());
+        }catch (Exception e){
+            l1B4.setText("Not defined");}
+        try {
+            l1B5.setText(String.valueOf(dataPointList.get(4).getX()) + "|" + dataPointList.get(4).getY());
+        }catch (Exception e){
+            l1B4.setText("Not defined");}
     }
-    private static void velocitySelected(double selectedVelocity){
+    private static void putLayout2(List<DataPoint> dataPointList){
+        try {
+            l2B1.setText(String.valueOf(dataPointList.get(0).getX()) + "|" + dataPointList.get(0).getY());
+        }catch (Exception e){
+            l2B1.setText("Not defined");}
+        try {
+            l2B2.setText(String.valueOf(dataPointList.get(1).getX()) + "|" + dataPointList.get(1).getY());
+        }catch (Exception e){
+            l2B2.setText("Not defined");}
+        try {
+            l2B3.setText(String.valueOf(dataPointList.get(2).getX()) + "|" + dataPointList.get(2).getY());
+        }catch (Exception e){
+            l2B3.setText("Not defined");}
+        try {
+            l2B4.setText(String.valueOf(dataPointList.get(3).getX()) + "|" + dataPointList.get(3).getY());
+        }catch (Exception e){
+            l2B4.setText("Not defined");}
+        try {
+            l2B5.setText(String.valueOf(dataPointList.get(4).getX()) + "|" + dataPointList.get(4).getY());
+        }catch (Exception e){
+            l2B4.setText("Not defined");}
+    }
+    private static void putLayout3(List<DataPoint> dataPointList){
+        try {
+            l3B1.setText(String.valueOf(dataPointList.get(0).getX()) + "|" + dataPointList.get(0).getY());
+        }catch (Exception e){
+            l3B1.setText("Not defined");}
+        try {
+            l3B2.setText(String.valueOf(dataPointList.get(1).getX()) + "|" + dataPointList.get(1).getY());
+        }catch (Exception e){
+            l3B2.setText("Not defined");}
+        try {
+            l3B3.setText(String.valueOf(dataPointList.get(2).getX()) + "|" + dataPointList.get(2).getY());
+        }catch (Exception e){
+            l3B3.setText("Not defined");}
+        try {
+            l3B4.setText(String.valueOf(dataPointList.get(3).getX()) + "|" + dataPointList.get(3).getY());
+        }catch (Exception e){
+            l3B4.setText("Not defined");}
+        try {
+            l3B5.setText(String.valueOf(dataPointList.get(4).getX()) + "|" + dataPointList.get(4).getY());
+        }catch (Exception e){
+            l3B4.setText("Not defined");}
+    }
+    private void velocitySelected(DataPoint selectedVelocity) {
         // velocity selected;
+        closeSetting(getContext());
+    }
 
+    private void closeSetting(Context context) {
+        // Remplacer le fragment
+        TrackVelocity velocityFragment = (TrackVelocity) ((AppCompatActivity) context).getSupportFragmentManager().findFragmentById(R.id.fragmentContainerVelocity);
+        if (velocityFragment != null) {
+            // Begin the transaction
+            FragmentTransaction transaction = ((AppCompatActivity) context).getSupportFragmentManager().beginTransaction();
+            // Remove the fragment
+            transaction.remove(velocityFragment);
+            // Commit the transaction
+            transaction.commit();
+        }
     }
 }

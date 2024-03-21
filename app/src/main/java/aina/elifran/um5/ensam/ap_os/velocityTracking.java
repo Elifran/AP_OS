@@ -1,4 +1,4 @@
-package aina.elifran.um5.ensam.ap_os.placeholder;
+package aina.elifran.um5.ensam.ap_os;
 
 import android.content.Context;
 
@@ -16,20 +16,20 @@ public class velocityTracking{
     private double samplingFrequency;
     private Context myContext;
     private velocityTrackingInterface listener;
-    public velocityTracking(Context context){
-        this.listener =(velocityTrackingInterface) context;
+    public velocityTracking(velocityTrackingInterface listener){
+        this.listener = listener;
     }
 
     public interface velocityTrackingInterface{
         void velocityResult(List<List<DataPoint>> returnValue);
     }
     public void setEstimatedVelocity(double estimated_Velocity){
-        estimatedVelocity = estimated_Velocity;
+        estimatedVelocity = estimated_Velocity/60;
     }
     public void addDataTrack(double[] data,double[] data2,double[] data3, double sampling_Frequency){
         dataArrayFft = new double[][]{data, data2, data3};
         samplingFrequency = sampling_Frequency;
-
+        track();
     }
     private void track(){
         List<List<DataPoint>> listData = new ArrayList<>();
