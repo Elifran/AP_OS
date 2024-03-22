@@ -223,6 +223,7 @@ public class MenuFragment extends Fragment {
                 if (!rpmText.isEmpty()) { // Check if the text is not empty
                     try {
                         rpmValue = Double.parseDouble(rpmText); // Convert text to float
+                        sendData(new data("RPM",rpmValue));
                     } catch (NumberFormatException e) {
                         rpmValue = 0.0; // Convert text to float
                     }

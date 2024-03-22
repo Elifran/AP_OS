@@ -7,7 +7,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.view.LayoutInflater;
@@ -19,6 +18,8 @@ import android.widget.RelativeLayout;
 import com.jjoe64.graphview.series.DataPoint;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -39,8 +40,7 @@ public class TrackVelocity extends Fragment{
     private static Button l1B1,l1B2,l1B3,l1B4,l1B5;
     private static Button l2B1,l2B2,l2B3,l2B4,l2B5;
     private static Button l3B1,l3B2,l3B3,l3B4,l3B5;
-
-    private TrackVelocity listener;
+    private static Button exit;
     public TrackVelocity() {
         // Required empty public constructor
     }
@@ -100,16 +100,253 @@ public class TrackVelocity extends Fragment{
         l3B3 = view.findViewById(R.id.layout3_button3);
         l3B4 = view.findViewById(R.id.layout3_button4);
         l3B5 = view.findViewById(R.id.layout3_button5);
-    }
+        exit = view.findViewById(R.id.exit);
 
+        buttonConfiguration();
+    }
+    public void buttonConfiguration(){
+        l1B1.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                double velocity = 0.0;
+                // Cast the view to Button and get its text
+                String buttonText = ((Button) view).getText().toString();
+                Pattern pattern = Pattern.compile("^([\\d.-]+)\\|");
+                Matcher velocityText = pattern.matcher(buttonText);
+                if (velocityText.find()) {
+                    velocity = Double.parseDouble(velocityText.group(1));
+                } else {
+                    velocity = Double.NaN;
+                }
+                velocitySelected(velocity);
+            }
+        });
+        l1B2.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                double velocity = 0.0;
+                // Cast the view to Button and get its text
+                String buttonText = ((Button) view).getText().toString();
+                Pattern pattern = Pattern.compile("^([\\d.-]+)\\|");
+                Matcher velocityText = pattern.matcher(buttonText);
+                if (velocityText.find()) {
+                    velocity = Double.parseDouble(velocityText.group(1));
+                } else {
+                    velocity = Double.NaN;
+                }
+                velocitySelected(velocity);
+            }
+        });
+        l1B3.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                double velocity = 0.0;
+                // Cast the view to Button and get its text
+                String buttonText = ((Button) view).getText().toString();
+                Pattern pattern = Pattern.compile("^([\\d.-]+)\\|");
+                Matcher velocityText = pattern.matcher(buttonText);
+                if (velocityText.find()) {
+                    velocity = Double.parseDouble(velocityText.group(1));
+                } else {
+                    velocity = Double.NaN;
+                }
+                velocitySelected(velocity);
+            }
+        });
+        l1B4.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                double velocity = 0.0;
+                // Cast the view to Button and get its text
+                String buttonText = ((Button) view).getText().toString();
+                Pattern pattern = Pattern.compile("^([\\d.-]+)\\|");
+                Matcher velocityText = pattern.matcher(buttonText);
+                if (velocityText.find()) {
+                    velocity = Double.parseDouble(velocityText.group(1));
+                } else {
+                    velocity = Double.NaN;
+                }
+                velocitySelected(velocity);
+            }
+        });
+        l1B5.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                double velocity = 0.0;
+                // Cast the view to Button and get its text
+                String buttonText = ((Button) view).getText().toString();
+                Pattern pattern = Pattern.compile("^([\\d.-]+)\\|");
+                Matcher velocityText = pattern.matcher(buttonText);
+                if (velocityText.find()) {
+                    velocity = Double.parseDouble(velocityText.group(1));
+                } else {
+                    velocity = Double.NaN;
+                }
+                velocitySelected(velocity);
+            }
+        });
+
+        l2B1.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                double velocity = 0.0;
+                // Cast the view to Button and get its text
+                String buttonText = ((Button) view).getText().toString();
+                Pattern pattern = Pattern.compile("^([\\d.-]+)\\|");
+                Matcher velocityText = pattern.matcher(buttonText);
+                if (velocityText.find()) {
+                    velocity = Double.parseDouble(velocityText.group(1));
+                } else {
+                    velocity = Double.NaN;
+                }
+                velocitySelected(velocity);
+            }
+        });
+        l2B2.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                double velocity = 0.0;
+                // Cast the view to Button and get its text
+                String buttonText = ((Button) view).getText().toString();
+                Pattern pattern = Pattern.compile("^([\\d.-]+)\\|");
+                Matcher velocityText = pattern.matcher(buttonText);
+                if (velocityText.find()) {
+                    velocity = Double.parseDouble(velocityText.group(1));
+                } else {
+                    velocity = Double.NaN;
+                }
+                velocitySelected(velocity);
+            }
+        });
+        l2B3.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                double velocity = 0.0;
+                // Cast the view to Button and get its text
+                String buttonText = ((Button) view).getText().toString();
+                Pattern pattern = Pattern.compile("^([\\d.-]+)\\|");
+                Matcher velocityText = pattern.matcher(buttonText);
+                if (velocityText.find()) {
+                    velocity = Double.parseDouble(velocityText.group(1));
+                } else {
+                    velocity = Double.NaN;
+                }
+                velocitySelected(velocity);
+            }
+        });
+        l2B4.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                double velocity = 0.0;
+                // Cast the view to Button and get its text
+                String buttonText = ((Button) view).getText().toString();
+                Pattern pattern = Pattern.compile("^([\\d.-]+)\\|");
+                Matcher velocityText = pattern.matcher(buttonText);
+                if (velocityText.find()) {
+                    velocity = Double.parseDouble(velocityText.group(1));
+                } else {
+                    velocity = Double.NaN;
+                }
+                velocitySelected(velocity);
+            }
+        });
+        l2B5.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                double velocity = 0.0;
+                // Cast the view to Button and get its text
+                String buttonText = ((Button) view).getText().toString();
+                Pattern pattern = Pattern.compile("^([\\d.-]+)\\|");
+                Matcher velocityText = pattern.matcher(buttonText);
+                if (velocityText.find()) {
+                    velocity = Double.parseDouble(velocityText.group(1));
+                } else {
+                    velocity = Double.NaN;
+                }
+                velocitySelected(velocity);
+            }
+        });
+
+        l3B1.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                double velocity = 0.0;
+                // Cast the view to Button and get its text
+                String buttonText = ((Button) view).getText().toString();
+                Pattern pattern = Pattern.compile("^([\\d.-]+)\\|");
+                Matcher velocityText = pattern.matcher(buttonText);
+                if (velocityText.find()) {
+                    velocity = Double.parseDouble(velocityText.group(1));
+                } else {
+                    velocity = Double.NaN;
+                }
+                velocitySelected(velocity);
+            }
+        });
+        l3B2.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                double velocity = 0.0;
+                // Cast the view to Button and get its text
+                String buttonText = ((Button) view).getText().toString();
+                Pattern pattern = Pattern.compile("^([\\d.-]+)\\|");
+                Matcher velocityText = pattern.matcher(buttonText);
+                if (velocityText.find()) {
+                    velocity = Double.parseDouble(velocityText.group(1));
+                } else {
+                    velocity = Double.NaN;
+                }
+                velocitySelected(velocity);
+            }
+        });
+        l3B3.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                double velocity = 0.0;
+                // Cast the view to Button and get its text
+                String buttonText = ((Button) view).getText().toString();
+                Pattern pattern = Pattern.compile("^([\\d.-]+)\\|");
+                Matcher velocityText = pattern.matcher(buttonText);
+                if (velocityText.find()) {
+                    velocity = Double.parseDouble(velocityText.group(1));
+                } else {
+                    velocity = Double.NaN;
+                }
+                velocitySelected(velocity);
+            }
+        });
+        l3B4.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                double velocity = 0.0;
+                // Cast the view to Button and get its text
+                String buttonText = ((Button) view).getText().toString();
+                Pattern pattern = Pattern.compile("^([\\d.-]+)\\|");
+                Matcher velocityText = pattern.matcher(buttonText);
+                if (velocityText.find()) {
+                    velocity = Double.parseDouble(velocityText.group(1));
+                } else {
+                    velocity = Double.NaN;
+                }
+                velocitySelected(velocity);
+            }
+        });
+        l3B5.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                double velocity = 0.0;
+                // Cast the view to Button and get its text
+                String buttonText = ((Button) view).getText().toString();
+                Pattern pattern = Pattern.compile("^([\\d.-]+)\\|");
+                Matcher velocityText = pattern.matcher(buttonText);
+                if (velocityText.find()) {
+                    velocity = Double.parseDouble(velocityText.group(1));
+                } else {
+                    velocity = Double.NaN;
+                }
+                velocitySelected(velocity);
+            }
+        });
+
+        exit.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                closeSetting(getContext());
+            }
+        });
+    }
     public static void velocityTrackResul(List<List<DataPoint>> returnValue){
         int i = 1;
         for (List<DataPoint> resultData: returnValue){
-            setButonLayout(resultData,i);
+            setButtonLayout(resultData,i);
             i++;
         }
     }
-    private static void setButonLayout(List<DataPoint> data, int number){
+    private static void setButtonLayout(List<DataPoint> data, int number){
         switch (number){
             case 1:
                 putLayout1(data);
@@ -190,8 +427,10 @@ public class TrackVelocity extends Fragment{
         }catch (Exception e){
             l3B4.setText("Not defined");}
     }
-    private void velocitySelected(DataPoint selectedVelocity) {
+    private void velocitySelected(double selectedVelocity) {
         // velocity selected;
+        MainActivity myActivity = (MainActivity) getActivity();
+        myActivity.getFromTracking(selectedVelocity);
         closeSetting(getContext());
     }
 

@@ -64,7 +64,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private boolean flag = false, flag2 = false, s_flag, ready = false,filterStatus = false;
     private fft fftdata;
     private boolean[] switchConfiguration;
-    private double rpmConfiguration = 1500 ,powerConfiguration = 15, powerCoefficientConfiguration = 10E+0, noiseCoefficientConfiguration = -140;
+    private static double rpmConfiguration = 1500;
+    private static double powerConfiguration = 15;
+    private static double powerCoefficientConfiguration = 10E+0;
+    private static double noiseCoefficientConfiguration = -140;
     private int bearingConfiguration = 12;
     private double samplingFrequency;
     private double[][] maxFrequency;
@@ -78,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     int analyseBuffer = 2048*16;
     dataAnalyse dataAnalyseVar;
     boolean trackVelocity;
-    velocityTracking velocityTracking;
+    static velocityTracking velocityTracking;
     @SuppressLint({"MissingInflatedId", "CutPasteId"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,14 +142,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         shiftRight(data_sensor_array,step_time);
         data_sensor_array[3][0] = step_time;
         last_timestamp = act_timestamp;
+
+        data_sensor_array[0][0] =Math.sqrt(Math.pow(event.values[0],2) + Math.pow(event.values[1],2) + Math.pow(event.values[2],2));
+        data_sensor_array[1][0] =event.values[1];
+        data_sensor_array[2][0] =event.values[2];
+
         if (ready){
-            data_sensor_array[0][0] =(double) (Yfilterdata.filterData(actSensorValues[0]));
-            data_sensor_array[1][0] =(double) (Yfilterdata.filterData(actSensorValues[1]));
-            data_sensor_array[2][0] =(double) (Zfilterdata.filterData(actSensorValues[2]));
+            //data_sensor_array[0][0] =Yfilterdata.filterData(actSensorValues[0]);
+            //data_sensor_array[1][0] =Yfilterdata.filterData(actSensorValues[1]);
+            //data_sensor_array[2][0] =Zfilterdata.filterData(actSensorValues[2]);
+
             if (analyseData){ // trying to  analyse the absolute value of the vibration from x,y and z
-                dataAnalyseVar.addData(Math.sqrt(Math.pow(Xfilterdata.filterData(actSensorValues[0]), 2) + Math.pow(Xfilterdata.filterData(actSensorValues[1]), 2) + Math.pow(Xfilterdata.filterData(actSensorValues[2]), 2)),step_time);  // asume that we analyse the first vibration data
+                dataAnalyseVar.addData(data_sensor_array[0][0],step_time);
+                /*dataAnalyseVar.addData(Math.sqrt(
+                                Math.pow(data_sensor_array[0][0], 2) +
+                                Math.pow(data_sensor_array[1][0], 2) +
+                                Math.pow(data_sensor_array[2][0], 2)),step_time);*/  // asume that we analyse the first vibration data
             }
-            if(     (Xfilterdata.isConfigChange(samplingFrequency,cutOffFrequency* samplingFrequency) ||
+            if((    Xfilterdata.isConfigChange(samplingFrequency,cutOffFrequency* samplingFrequency) ||
                     Yfilterdata.isConfigChange(samplingFrequency,cutOffFrequency* samplingFrequency) ||
                     Xfilterdata.isConfigChange(samplingFrequency,cutOffFrequency* samplingFrequency) ) && flag){
                 dataAnalyseVar.setConfig("SAMPLING FREQ", samplingFrequency);
@@ -154,22 +167,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         }
         else {
-            data_sensor_array[0][0] =event.values[0];
-            data_sensor_array[1][0] =event.values[1];
-            data_sensor_array[2][0] =event.values[2];
+            //data_sensor_array[0][0] =event.values[0];
+            //data_sensor_array[1][0] =event.values[1];
+            //data_sensor_array[2][0] =event.values[2];
                 if(counter > data_leingh*1.2){
                     if(!filterStatus){
-                        Xfilterdata = new filter(filterOrder, samplingFrequency,cutOffFrequency* samplingFrequency);
-                        Yfilterdata = new filter(filterOrder, samplingFrequency,cutOffFrequency* samplingFrequency);
-                        Zfilterdata = new filter(filterOrder, samplingFrequency,cutOffFrequency* samplingFrequency);
+                        Xfilterdata = new filter(filterOrder, samplingFrequency,cutOffFrequency*samplingFrequency);
+                        Yfilterdata = new filter(filterOrder, samplingFrequency,cutOffFrequency*samplingFrequency);
+                        Zfilterdata = new filter(filterOrder, samplingFrequency,cutOffFrequency*samplingFrequency);
                         filterStatus = true;        // avoid recreation of the filter class
-                        Toast.makeText(getApplicationContext(), "filter initialized at Fe :" + samplingFrequency + "Hz", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), "Filter initialized at Fe :" + samplingFrequency + "Hz", Toast.LENGTH_LONG).show();
 
                         dataAnalyseVar = new dataAnalyse(analyseBuffer, samplingFrequency,rpmConfiguration,powerConfiguration,bearingConfiguration,switchConfiguration, powerCoefficientConfiguration,noiseCoefficientConfiguration);
                         dataAnalyseVar.setAnalyseDoneListener(this);
 
                     }
-                    if (Xfilterdata.isCreated() && Yfilterdata.isCreated() && Zfilterdata.isCreated()){
+                    if (    Xfilterdata.isCreated() &&
+                            Yfilterdata.isCreated() &&
+                            Zfilterdata.isCreated()){
                         button_param.setText("READY - COLLECT");
                         ready = true;}
                 }
@@ -252,8 +267,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         rpmConfiguration = rpm;
         trackVelocity = true;
         closeSetting();
-        Toast.makeText(getApplicationContext(), "thing seted...?", Toast.LENGTH_LONG).show();
-
+    }
+    public void getFromTracking(double selectedVelocity){
+        if (!Double.isNaN(selectedVelocity)){
+            rpmSetting(selectedVelocity);
+            Toast.makeText(getApplicationContext(),"Velocity Set at : " + rpmConfiguration ,Toast.LENGTH_SHORT).show();
+        }
+        else
+        Toast.makeText(getApplicationContext(),"Your selection is not a number, Velocity set at : " + rpmConfiguration,Toast.LENGTH_SHORT).show();
     }
 
     public Object getDataMain(String Id){
@@ -443,6 +464,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
     private void rpmSetting(double rpmData){
         rpmConfiguration = rpmData;
+        velocityTracking.setEstimatedVelocity(rpmConfiguration);
     }
     private void noiseCoefficientSetting(double noiseData){
         noiseCoefficientConfiguration = noiseData;

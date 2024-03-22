@@ -1,27 +1,29 @@
 package aina.elifran.um5.ensam.ap_os;
 
 public class filter {
-    private  final int filterOrder;
-    private double[] numBuffer;
+    private final int filterOrder;
+    private volatile double[] numBuffer;
     public double[] filterCoefficient;
     private double samplingFrequency;
     private double cutOffFrequency;
     private boolean isCreated = false;
     filter(int order, double sampling_frequency,double cut_offFrequency){
-        if((int)(order/2) == order/2)// order filter iis odd
+        if((int)(order/2.0) == order/2)// order filter iis odd
+        {
             filterOrder = order+1;
-        else
+        }
+        else{
             filterOrder = order;
+        }
         samplingFrequency = sampling_frequency;
         cutOffFrequency = cut_offFrequency;
         filterCoefficient = new double[filterOrder+1];
         numBuffer = new double[filterOrder+1];
         isCreated = getFIRfilterCoef(filterOrder,cutOffFrequency,samplingFrequency);
     }
-
     // verify if the class is created or not,
     public boolean isCreated(){return isCreated;}
-    public boolean isConfigChange( double sampling_frequency,double cut_offFrequency){
+    public boolean isConfigChange(double sampling_frequency, double cut_offFrequency){
         boolean changed = false;
         if (sampling_frequency != samplingFrequency || cut_offFrequency != cutOffFrequency){
             samplingFrequency = sampling_frequency;

@@ -7,7 +7,7 @@ import androidx.annotation.NonNull;
 
 
 public class fft {
-    private  final int length_data; //data length
+    private int length_data; //data length
     private  int[] BitReversData;
     private  double[] DataReversData;
     private  Complex[][] fftCoefficient;

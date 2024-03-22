@@ -14,8 +14,8 @@ import java.util.Objects;
 
 public class dataAnalyse {
     private double samplingFrequency, rpmConfiguration, powerConfiguration;
-    private double powerCoefficientConfiguration = 15E+0;  // the vibration amplitude coefficient
-    private double noiseCoefficientConfiguration = 1E-6; // frequency outside the noise
+    private double powerCoefficientConfiguration;  // the vibration amplitude coefficient
+    private double noiseCoefficientConfiguration; // frequency outside the noise
     private final double coeffValue = 2; // frequency pic identification
     private final double frequencyShift = 1E-1; //
     private static int bearingConfiguration;
