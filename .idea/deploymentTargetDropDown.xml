@@ -9,15 +9,17 @@
               <type value="RUNNING_DEVICE_TARGET" />
               <deviceKey>
                 <Key>
-                  <type value="VIRTUAL_DEVICE_PATH" />
-                  <value value="C:\Users\fidel\.android\avd\Pixel_8_Pro_API_TiramisuPrivacySandbox.avd" />
+                  <type value="SERIAL_NUMBER" />
+                  <value value="RFCR80H4ATL" />
                 </Key>
               </deviceKey>
             </Target>
           </runningDeviceTargetSelectedWithDropDown>
-          <targetSelectedWithDropDown>
+          <timeTargetWasSelectedWithDropDown value="2024-03-22T20:41:22.068934600Z" />
+          <multipleDevicesSelectedInDropDown value="true" />
+          <runningDeviceTargetsSelectedWithDialog>
             <Target>
-              <type value="QUICK_BOOT_TARGET" />
+              <type value="RUNNING_DEVICE_TARGET" />
               <deviceKey>
                 <Key>
                   <type value="VIRTUAL_DEVICE_PATH" />
@@ -25,18 +27,8 @@
                 </Key>
               </deviceKey>
             </Target>
-          </targetSelectedWithDropDown>
-          <timeTargetWasSelectedWithDropDown value="2024-03-21T23:54:13.670411600Z" />
+          </runningDeviceTargetsSelectedWithDialog>
           <targetsSelectedWithDialog>
-            <Target>
-              <type value="QUICK_BOOT_TARGET" />
-              <deviceKey>
-                <Key>
-                  <type value="VIRTUAL_DEVICE_PATH" />
-                  <value value="C:\Users\fidel\.android\avd\Nexus_9_API_22.avd" />
-                </Key>
-              </deviceKey>
-            </Target>
             <Target>
               <type value="QUICK_BOOT_TARGET" />
               <deviceKey>

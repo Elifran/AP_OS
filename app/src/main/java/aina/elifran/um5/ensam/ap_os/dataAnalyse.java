@@ -250,7 +250,7 @@ public class dataAnalyse {
     private static List<DataPoint> dataFrequencyMultiple(List<DataPoint> dataFrequency, double frequency) {
         List<DataPoint> resultArray = new ArrayList<>();
         for (DataPoint data : dataFrequency) {
-            if (Math.abs(data.getX() % frequency) < 1E-1 && (data.getY() / frequency) > 1.5) // remove main frequency
+            if (Math.abs(data.getX() % frequency) < 1E-2 && (data.getY() / frequency) > 1.5) // remove main frequency
                 resultArray.add(data);
         }
         return resultArray;
@@ -258,7 +258,7 @@ public class dataAnalyse {
     private static List<DataPoint> dataFrequencyMultipleHalf(List<DataPoint> dataFrequency, double frequency) {
         List<DataPoint> resultArray = new ArrayList<>();
         for (DataPoint data : dataFrequency) {
-            if (Math.abs(data.getX() % frequency/2.0) < 1E-1 && (data.getY() / frequency) > 0.4) // remove main frequency
+            if (Math.abs(data.getX() % frequency/2.0) < 1E-2 && (data.getY() / frequency) > 0.4) // remove main frequency
                 resultArray.add(data);
         }
         return resultArray;
@@ -266,7 +266,7 @@ public class dataAnalyse {
     private static List<DataPoint> dataFrequencyMultipleBearing(List<DataPoint> dataFrequency, double frequency) {
         List<DataPoint> resultArray = new ArrayList<>();
         for (DataPoint data : dataFrequency) {
-            if (Math.abs(data.getX() % frequency*bearingConfiguration) < 1E-1 && (data.getY() / frequency) > 1.5) // remove main frequency
+            if (Math.abs(data.getX() % frequency*bearingConfiguration) < 1E-2 && (data.getY() / frequency) > 1.5) // remove main frequency
                 resultArray.add(data);
         }
         return resultArray;

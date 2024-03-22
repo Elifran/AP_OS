@@ -36,6 +36,8 @@ public class TrackVelocity extends Fragment{
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+
+    static boolean viewCreated = false;
     private static RelativeLayout layout1,layout2,layout3;
     private static Button l1B1,l1B2,l1B3,l1B4,l1B5;
     private static Button l2B1,l2B2,l2B3,l2B4,l2B5;
@@ -101,8 +103,8 @@ public class TrackVelocity extends Fragment{
         l3B4 = view.findViewById(R.id.layout3_button4);
         l3B5 = view.findViewById(R.id.layout3_button5);
         exit = view.findViewById(R.id.exit);
-
         buttonConfiguration();
+        viewCreated = true;
     }
     public void buttonConfiguration(){
         l1B1.setOnClickListener(new View.OnClickListener() {
@@ -341,10 +343,13 @@ public class TrackVelocity extends Fragment{
     }
     public static void velocityTrackResul(List<List<DataPoint>> returnValue){
         int i = 1;
-        for (List<DataPoint> resultData: returnValue){
-            setButtonLayout(resultData,i);
-            i++;
+        if (viewCreated){
+            for (List<DataPoint> resultData: returnValue){
+                setButtonLayout(resultData,i);
+                i++;
+            }
         }
+
     }
     private static void setButtonLayout(List<DataPoint> data, int number){
         switch (number){

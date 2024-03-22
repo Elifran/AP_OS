@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     LinearLayout command_layout_setparams;
     SensorManager sensorManager;
     Sensor OutputSensor;
-    private final int data_leingh = 2048*2; // min 256
+    private final int data_leingh = 1024*4; // min 256
     private final int print_scale = 512;
     private volatile double[][] data_sensor_array;
     private volatile  double[][] data_fft_array;
@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private filter Yfilterdata;
     private filter Zfilterdata;
     private static final int filterOrder = 50;
-    private static final double cutOffFrequency = 0.45; // must be less than 0.5
+    private static final double cutOffFrequency = 0.485; // must be less than 0.5
     private Handler dofftHandler,doplotHandler,doprintHandler;
     boolean analyseData = false;
     int analyseBuffer = 2048*16;
@@ -136,6 +136,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onSensorChanged(@NonNull SensorEvent event) {
         float[] actSensorValues = event.values.clone();
+        double var;
         act_timestamp = (event.timestamp)/1000000; // in millisecond
         step_time = act_timestamp - last_timestamp;
         data_counter +=1;
@@ -143,17 +144,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         data_sensor_array[3][0] = step_time;
         last_timestamp = act_timestamp;
 
-        data_sensor_array[0][0] =Math.sqrt(Math.pow(event.values[0],2) + Math.pow(event.values[1],2) + Math.pow(event.values[2],2));
-        data_sensor_array[1][0] =event.values[1];
-        data_sensor_array[2][0] =event.values[2];
-
         if (ready){
-            //data_sensor_array[0][0] =Yfilterdata.filterData(actSensorValues[0]);
-            //data_sensor_array[1][0] =Yfilterdata.filterData(actSensorValues[1]);
-            //data_sensor_array[2][0] =Zfilterdata.filterData(actSensorValues[2]);
+            var = Xfilterdata.filterData(
+                    Math.pow(actSensorValues[0], 2) +
+                             Math.pow(actSensorValues[1], 2) +
+                             Math.pow(actSensorValues[2], 2));
+            data_sensor_array[0][0] =var;
+            data_sensor_array[1][0] =Yfilterdata.filterData(actSensorValues[1]);
+            data_sensor_array[2][0] =Zfilterdata.filterData(actSensorValues[2]);
 
             if (analyseData){ // trying to  analyse the absolute value of the vibration from x,y and z
-                dataAnalyseVar.addData(data_sensor_array[0][0],step_time);
                 /*dataAnalyseVar.addData(Math.sqrt(
                                 Math.pow(data_sensor_array[0][0], 2) +
                                 Math.pow(data_sensor_array[1][0], 2) +
@@ -161,15 +161,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
             if((    Xfilterdata.isConfigChange(samplingFrequency,cutOffFrequency* samplingFrequency) ||
                     Yfilterdata.isConfigChange(samplingFrequency,cutOffFrequency* samplingFrequency) ||
-                    Xfilterdata.isConfigChange(samplingFrequency,cutOffFrequency* samplingFrequency) ) && flag){
+                    Zfilterdata.isConfigChange(samplingFrequency,cutOffFrequency* samplingFrequency) ) && flag){
                 dataAnalyseVar.setConfig("SAMPLING FREQ", samplingFrequency);
                 //Toast.makeText(getApplicationContext(), "Configuration filter Have been Changed", Toast.LENGTH_LONG).show();
             }
         }
         else {
-            //data_sensor_array[0][0] =event.values[0];
-            //data_sensor_array[1][0] =event.values[1];
-            //data_sensor_array[2][0] =event.values[2];
+            data_sensor_array[0][0] =event.values[0];
+            data_sensor_array[1][0] =event.values[1];
+            data_sensor_array[2][0] =event.values[2];
                 if(counter > data_leingh*1.2){
                     if(!filterStatus){
                         Xfilterdata = new filter(filterOrder, samplingFrequency,cutOffFrequency*samplingFrequency);

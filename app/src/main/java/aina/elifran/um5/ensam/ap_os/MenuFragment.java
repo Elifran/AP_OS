@@ -1,5 +1,6 @@
 package aina.elifran.um5.ensam.ap_os;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -9,6 +10,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -149,11 +151,17 @@ public class MenuFragment extends Fragment {
        menu_layout.setLayoutParams(menu_fragment_params);
        menu_layout.setBackgroundColor(Color.parseColor("#CCCCCCCC"));
     }
+    @SuppressLint("ClickableViewAccessibility")
     private void onClick(){
-        setting_button.setOnClickListener(new View.OnClickListener() {
+        setting_button.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onClick(View v) {
-                closeSetting();
+            public boolean onTouch(View v, MotionEvent event) {
+                switch(event.getAction()) {
+                    case MotionEvent.ACTION_UP:
+                        closeSetting();
+                        break;
+                }
+                return true;
             }
         });
         track_button.setOnClickListener(new View.OnClickListener() {
