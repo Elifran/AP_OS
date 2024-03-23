@@ -17,7 +17,7 @@ public class dataAnalyse {
     private double powerCoefficientConfiguration;  // the vibration amplitude coefficient
     private double noiseCoefficientConfiguration; // frequency outside the noise
     private final double coeffValue = 5; // frequency pic identification
-    private final double frequencyShift = 1E-3; //
+    private final double frequencyShift = 1E-1; //
     private static int bearingConfiguration;
     private boolean[] switchConfiguration;
 
@@ -223,7 +223,7 @@ public class dataAnalyse {
     public double[] getMaxAnalyse(@NonNull double[] data, int low, int hight) {
         double max = -1.0E100;
         int pos = 0;
-        for (int i = low; i < hight; i++) {
+        for (int i = low; i <= hight; i++) {
             if (max < data[i]) {
                 max = data[i];
                 pos = i;
