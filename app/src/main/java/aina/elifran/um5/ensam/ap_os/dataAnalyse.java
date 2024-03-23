@@ -17,7 +17,7 @@ public class dataAnalyse {
     private double powerCoefficientConfiguration;  // the vibration amplitude coefficient
     private double noiseCoefficientConfiguration; // frequency outside the noise
     private final double coeffValue = 5; // frequency pic identification
-    private final double frequencyShift = 1E-1; //
+    private final double frequencyShift = 1E0; //
     private static int bearingConfiguration;
     private boolean[] switchConfiguration;
 
