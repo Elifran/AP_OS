@@ -26,12 +26,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.androidplot.xy.BoundaryMode;
-import com.androidplot.xy.LineAndPointFormatter;
-import com.androidplot.xy.PanZoom;
-import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYPlot;
-import com.androidplot.xy.XYSeries;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
@@ -41,21 +36,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import aina.elifran.um5.ensam.ap_os.velocityTracking;
-
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener, MenuFragment.OnDataChangeListener,dataAnalyse.analyseDoneListener, velocityTracking.velocityTrackingInterface {
     int counter = 0;
-    private final double vibrationConstante = 0.285;
     private TextView OutputX, OutputY, OutputZ,data_output_label,analyse_result;
     private Button button_stop,button_param;
     private GraphView data_output1;
     private XYPlot data_output;
-    private ViewGroup control_layout,chart_layout,output_control_values_layout,command_layout,output_label,output_content;
-    LinearLayout command_layout_setparams;
+    private ViewGroup control_layout,chart_layout,output_control_values_layout,command_layout,output_label;
+    LinearLayout command_layout_set_params;
     SensorManager sensorManager;
     Sensor OutputSensor;
-    private final int data_leingh = 2048*4; // min 256
+    private final int data_lenght = 2048*4; // min 256
     private final int print_scale = 512;
     private volatile double[][] data_sensor_array;
     private volatile  double[][] data_fft_array;
@@ -105,14 +97,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         chart_layout = findViewById(R.id.chart_layout);
         output_control_values_layout = findViewById(R.id.output_values);
         command_layout = findViewById(R.id.command_layout);
-        command_layout_setparams = findViewById(R.id.command_layout);
-        output_content = findViewById(R.id.output_content);
+        command_layout_set_params = findViewById(R.id.command_layout);
+        //output_content = findViewById(R.id.output_content);
         output_label = findViewById(R.id.output_label);
         analyse_result = findViewById(R.id.analyse_result);
 
-        data_sensor_array = new double[4][data_leingh];
-        data_fft_array = new double[4][data_leingh];
-        fftdata = new fft(data_leingh);
+        data_sensor_array = new double[4][data_lenght];
+        data_fft_array = new double[4][data_lenght];
+        fftdata = new fft(data_lenght);
         maxFrequency = new double[3][2];
         switchConfiguration = new boolean[10];
 
@@ -167,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             data_sensor_array[0][0] =event.values[0];
             data_sensor_array[1][0] =event.values[1];
             data_sensor_array[2][0] =event.values[2];
-                if(counter > data_leingh*1.2){
+                if(counter > data_lenght *1.2){
                     if(!filterStatus){
                         Xfilterdata = new filter(filterOrder, samplingFrequency,cutOffFrequency*samplingFrequency);
                         Yfilterdata = new filter(filterOrder, samplingFrequency,cutOffFrequency*samplingFrequency);
@@ -189,14 +181,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     counter++;
                 }
         }
-        if(data_counter > data_leingh/print_scale) {
+        if(data_counter > data_lenght /print_scale) {
             if (flag && ready) {
                 dofftHandler.post(getfftAbs);
                 //doplotHandler.post(data_plot);   //doplotHandler in other way
                 doplotHandler.post(data_plot1);   //doplotHandler in other way
             }
             data_counter = 0;
-            doplotHandler.post(print_data);      //doprintHandler in other way
+            doprintHandler.post(print_data);      //doprintHandler in other way
         }
 }
     @Override
@@ -273,8 +265,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             rpmSetting(selectedVelocity);
             Toast.makeText(getApplicationContext(),"Velocity Set at : " + rpmConfiguration ,Toast.LENGTH_SHORT).show();
         }
-        else
-        Toast.makeText(getApplicationContext(),"Your selection is not a number, Velocity set at : " + rpmConfiguration,Toast.LENGTH_SHORT).show();
+        else{
+            Toast.makeText(getApplicationContext(),"Your selection is not a number, Velocity set at : " + rpmConfiguration,Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     public Object getDataMain(String Id){
@@ -306,14 +300,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
     private void setupButton(){
         //resume button
-        button_stop.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                if(!ready)
-                    Toast.makeText(getApplicationContext(), "Not Ready Yet", Toast.LENGTH_SHORT).show();
-                else{
-                    flag = !flag;
-                    button_stop.setText(flag ? "STOP" : "RESUME");
-                }
+        button_stop.setOnClickListener(view -> {
+            if(!ready)
+                Toast.makeText(getApplicationContext(), "Not Ready Yet", Toast.LENGTH_SHORT).show();
+            else{
+                flag = !flag;
+                button_stop.setText(flag ? "STOP" : "RESUME");
             }
         });
         button_param.setOnClickListener(new View.OnClickListener(){
@@ -391,11 +383,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     // command layout paramsb button
         command_params.width = width/2;
         if(height > width){
-            command_layout_setparams.setOrientation(LinearLayout.VERTICAL);
+            command_layout_set_params.setOrientation(LinearLayout.VERTICAL);
             button_stop_params.width = command_params.width;
             button_param_params.width = command_params.width;
         }else {
-            command_layout_setparams.setOrientation(LinearLayout.HORIZONTAL);
+            command_layout_set_params.setOrientation(LinearLayout.HORIZONTAL);
             button_stop_params.width = command_params.width/2;
             button_param_params.width = command_params.width/2;
         }
@@ -449,14 +441,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return new double[]{max,data_fft_array[3][pos]};
     }
     private void shiftRight(@NonNull double[][] array, double timestamp){
-        for (int i = data_leingh - 1; i > 0; i--){
+        for (int i = data_lenght - 1; i > 0; i--){
             array[0][i] = array[0][i-1];
             array[1][i] = array[1][i-1];
             array[2][i] = array[2][i-1];
             array[3][i] = array[3][i-1] + timestamp;
         }
         array[3][0] = 0;
-        samplingFrequency = 1000*data_leingh/data_sensor_array[3][data_leingh-1];
+        samplingFrequency = 1000* data_lenght /data_sensor_array[3][data_lenght -1];
     }
 
     private void switchSetting(boolean[] switchData){
@@ -482,8 +474,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private final Runnable  getfftAbs = new Runnable() {
         @Override
         public void run() {
-            double resolution = samplingFrequency /data_leingh;
-            for (int i = 0;i<data_leingh;i++){
+            double resolution = samplingFrequency / data_lenght;
+            for (int i = 0; i< data_lenght; i++){
                 //data_fft_array[3][i+1] = data_sensor_array[3][i+1];
                 data_fft_array[3][i] = resolution*i;
             }
@@ -512,13 +504,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             List<DataPoint> zFftPoints = new ArrayList<>();
 
             // Remplissez les listes de points à partir de vos tableaux de données
-            for (int i = 0; i < data_leingh/2; i++) {
+            for (int i = 0; i < data_lenght /2; i++) {
                 xPoints.add(new DataPoint(data_fft_array[3][i], data_sensor_array[0][i*2]));
                 yPoints.add(new DataPoint(data_fft_array[3][i], data_sensor_array[1][i*2]));
                 zPoints.add(new DataPoint(data_fft_array[3][i], data_sensor_array[2][i*2]));
 
             }
-            for (int i = 0; i < data_leingh / 2; i++) {
+            for (int i = 0; i < data_lenght / 2; i++) {
                 xFftPoints.add(new DataPoint(data_fft_array[3][i], data_fft_array[0][i]));
                 yFftPoints.add(new DataPoint(data_fft_array[3][i], data_fft_array[1][i]));
                 zFftPoints.add(new DataPoint(data_fft_array[3][i], data_fft_array[2][i]));
@@ -697,63 +689,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         fragmentTransaction2.commit();
     }
     /*--------------------------------------------------------------------------------not used function -----------------------------------------------------------*/
-    private final Runnable data_plot = new Runnable() {
-        @Override
-        public void run() {
-            List<Number> times = new ArrayList<>();
-            List<Number> xValues = new ArrayList<>();
-            List<Number> yValues = new ArrayList<>();
-            List<Number> zValues = new ArrayList<>();
-            List<Number> xfftValues = new ArrayList<>();
-            List<Number> yfftValues = new ArrayList<>();
-            List<Number> zfftValues = new ArrayList<>();
-            List<Number> fftfrequency = new ArrayList<>();
-            // Populate xValues and yValues from your data_sensor_array
-            for (int i = 0; i < data_leingh; i++) {
-
-                xValues.add(data_sensor_array[0][i]); // output x
-                yValues.add(data_sensor_array[1][i]); // output y
-                zValues.add(data_sensor_array[2][i]); // output z
-                times.add(data_sensor_array[3][i]); // time
-
-            }
-            for (int i = 0; i < data_leingh / 2; i++) {
-                xfftValues.add(data_fft_array[0][i]); // output fft
-                yfftValues.add(data_fft_array[1][i]); // output fft
-                zfftValues.add(data_fft_array[2][i]); // output fft
-                //fftfrequency.add(data_fft_array[3][i*2]); // output fft frequency
-                fftfrequency.add(data_sensor_array[3][i * 2]); // output fft frequency
-            }
-            XYSeries Xseries = new SimpleXYSeries(times, xValues, ""/*"Output x"*/);
-            XYSeries Yseries = new SimpleXYSeries(times, yValues, ""/*"Output y"*/);
-            XYSeries Zseries = new SimpleXYSeries(times, zValues, ""/*"Output z"*/);
-            LineAndPointFormatter Xformatter = new LineAndPointFormatter(Color.BLUE, null, null, null);
-            LineAndPointFormatter Yformatter = new LineAndPointFormatter(Color.RED, null, null, null);
-            LineAndPointFormatter Zformatter = new LineAndPointFormatter(Color.BLACK, null, null, null);
-
-            XYSeries xFFTseries = new SimpleXYSeries(fftfrequency, xfftValues, ""/*"Output x"*/);
-            XYSeries yFFTseries = new SimpleXYSeries(fftfrequency, yfftValues, ""/*"Output y"*/);
-            XYSeries zFFTseries = new SimpleXYSeries(fftfrequency, zfftValues, ""/*"Output z"*/);
-            LineAndPointFormatter xFFTformatter = new LineAndPointFormatter(Color.BLUE, null, null, null);
-            LineAndPointFormatter yFFTformatter = new LineAndPointFormatter(Color.RED, null, null, null);
-            LineAndPointFormatter zFFTformatter = new LineAndPointFormatter(Color.BLACK, null, null, null);
-
-            data_output.clear();        // clear the output data
-//1
-            data_output.addSeries(xFFTseries, xFFTformatter);
-            data_output.addSeries(yFFTseries, yFFTformatter);
-            data_output.addSeries(zFFTseries, zFFTformatter);
-            data_output.addSeries(Xseries, Xformatter);
-            data_output.addSeries(Yseries, Yformatter);
-            data_output.addSeries(Zseries, Zformatter);
-            data_output.setRangeBoundaries(-150, 20, BoundaryMode.FIXED);
-            PanZoom.attach(data_output, PanZoom.Pan.BOTH, PanZoom.Zoom.STRETCH_BOTH);
-            // Assuming data_output is your XYPlot object
-//
-            data_output.redraw(); // Refresh the plot
-        }
-    };
-
 
 }
 
