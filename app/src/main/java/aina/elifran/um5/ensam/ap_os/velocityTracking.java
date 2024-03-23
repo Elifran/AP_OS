@@ -32,8 +32,8 @@ public class velocityTracking{
     }
     private void track(){
         List<List<DataPoint>> listData = new ArrayList<>();
-        int velocityHigh = (int)(estimatedVelocity*dataArrayFft[0].length/samplingFrequency + estimatedVelocity*dataArrayFft[0].length*0.05/samplingFrequency); // +/- 5% from estimated RPM
-        int velocityLow = (int)(estimatedVelocity*dataArrayFft[0].length/samplingFrequency - estimatedVelocity*dataArrayFft[0].length*0.05/samplingFrequency);
+        int velocityHigh = (int)(estimatedVelocity*dataArrayFft[0].length/samplingFrequency + estimatedVelocity*dataArrayFft[0].length*0.15/samplingFrequency); // +/-15% from estimated RPM
+        int velocityLow = (int)(estimatedVelocity*dataArrayFft[0].length/samplingFrequency - estimatedVelocity*dataArrayFft[0].length*0.15/samplingFrequency);
         for (double[] data : dataArrayFft){
             listData.add(getMax(data, velocityLow,velocityHigh ));
         }

@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     LinearLayout command_layout_setparams;
     SensorManager sensorManager;
     Sensor OutputSensor;
-    private final int data_leingh = 1024*4; // min 256
+    private final int data_leingh = 2048*4; // min 256
     private final int print_scale = 512;
     private volatile double[][] data_sensor_array;
     private volatile  double[][] data_fft_array;
@@ -145,19 +145,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         last_timestamp = act_timestamp;
 
         if (ready){
-            var = Xfilterdata.filterData(
-                    Math.pow(actSensorValues[0], 2) +
-                             Math.pow(actSensorValues[1], 2) +
-                             Math.pow(actSensorValues[2], 2));
-            data_sensor_array[0][0] =var;
-            data_sensor_array[1][0] =Yfilterdata.filterData(actSensorValues[1]);
-            data_sensor_array[2][0] =Zfilterdata.filterData(actSensorValues[2]);
+            data_sensor_array[0][0] = Xfilterdata.filterData(actSensorValues[0]);
+            data_sensor_array[1][0] = Yfilterdata.filterData(actSensorValues[1]);
+            data_sensor_array[2][0] = Zfilterdata.filterData(actSensorValues[2]);
+            var = Math.sqrt(
+                            Math.pow(data_sensor_array[0][0], 2) +
+                            Math.pow(data_sensor_array[1][0], 2) +
+                            Math.pow(data_sensor_array[2][0], 2));
 
             if (analyseData){ // trying to  analyse the absolute value of the vibration from x,y and z
-                /*dataAnalyseVar.addData(Math.sqrt(
-                                Math.pow(data_sensor_array[0][0], 2) +
-                                Math.pow(data_sensor_array[1][0], 2) +
-                                Math.pow(data_sensor_array[2][0], 2)),step_time);*/  // asume that we analyse the first vibration data
+                dataAnalyseVar.addData(var,step_time); // asume that we analyse the first vibration data
             }
             if((    Xfilterdata.isConfigChange(samplingFrequency,cutOffFrequency* samplingFrequency) ||
                     Yfilterdata.isConfigChange(samplingFrequency,cutOffFrequency* samplingFrequency) ||
@@ -178,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         filterStatus = true;        // avoid recreation of the filter class
                         Toast.makeText(getApplicationContext(), "Filter initialized at Fe :" + samplingFrequency + "Hz", Toast.LENGTH_LONG).show();
 
-                        dataAnalyseVar = new dataAnalyse(analyseBuffer, samplingFrequency,rpmConfiguration,powerConfiguration,bearingConfiguration,switchConfiguration, powerCoefficientConfiguration,noiseCoefficientConfiguration);
+                        dataAnalyseVar = new dataAnalyse(analyseBuffer, samplingFrequency,rpmConfiguration,powerConfiguration,bearingConfiguration,switchConfiguration, noiseCoefficientConfiguration, powerCoefficientConfiguration);
                         dataAnalyseVar.setAnalyseDoneListener(this);
 
                     }
@@ -268,8 +265,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         trackVelocity = true;
         closeSetting();
     }
+    @SuppressLint("SuspiciousIndentation")
     public void getFromTracking(double selectedVelocity){
         if (!Double.isNaN(selectedVelocity)){
+            dataAnalyseVar.setConfig("RPM",selectedVelocity);
+            sendDataPreferences();
             rpmSetting(selectedVelocity);
             Toast.makeText(getApplicationContext(),"Velocity Set at : " + rpmConfiguration ,Toast.LENGTH_SHORT).show();
         }
