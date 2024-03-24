@@ -352,6 +352,7 @@
                     android:text="[NUMBER]"/>
 
             </RelativeLayout>
+
             <RelativeLayout
                 android:id="@+id/noise"
                 android:layout_width="wrap_content"
@@ -391,6 +392,126 @@
                     android:text="[dB]           "/>
 
             </RelativeLayout>
+
+
+            <RelativeLayout
+                android:id="@+id/lag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/lagLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/lag_value"
+                    android:layout_alignTop="@+id/lag_value"
+                    android:gravity="center"
+                    android:text="lag coefficient            "
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentLeft="true"
+                    />
+
+                <EditText
+                    android:id="@+id/lag_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toEndOf="@+id/lagLabel"
+                    android:layout_toRightOf="@+id/lagLabel"
+                    android:layout_toStartOf="@+id/lagIndice"
+                    android:layout_toLeftOf="@+id/lagIndice"
+                    android:inputType="number"
+                    />
+                <TextView
+                    android:id="@+id/lagIndice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/lag_value"
+                    android:layout_alignTop="@+id/lag_value"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:gravity="center"
+                    android:text="[NUMBER] "/>
+
+            </RelativeLayout>
+            <RelativeLayout
+                android:id="@+id/thershold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/thersholdLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/thershold_value"
+                    android:layout_alignTop="@+id/thershold_value"
+                    android:gravity="center"
+                    android:text="thershold coefficient "
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentLeft="true"
+                    />
+
+                <EditText
+                    android:id="@+id/thershold_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toEndOf="@+id/thersholdLabel"
+                    android:layout_toRightOf="@+id/thersholdLabel"
+                    android:layout_toStartOf="@+id/thersholdIndice"
+                    android:layout_toLeftOf="@+id/thersholdIndice"
+                    android:inputType="numberDecimal"
+                    />
+                <TextView
+                    android:id="@+id/thersholdIndice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/thershold_value"
+                    android:layout_alignTop="@+id/thershold_value"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:gravity="center"
+                    android:text="[NUMBER] "/>
+
+            </RelativeLayout>
+            <RelativeLayout
+                android:id="@+id/influence"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/influenceLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/influence_value"
+                    android:layout_alignTop="@+id/influence_value"
+                    android:gravity="center"
+                    android:text="influence coefficient  "
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentLeft="true"
+                    />
+
+                <EditText
+                    android:id="@+id/influence_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toEndOf="@+id/influenceLabel"
+                    android:layout_toRightOf="@+id/influenceLabel"
+                    android:layout_toStartOf="@+id/influenceIndice"
+                    android:layout_toLeftOf="@+id/influenceIndice"
+                    android:inputType="numberDecimal"
+                    />
+                <TextView
+                    android:id="@+id/influenceIndice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/influence_value"
+                    android:layout_alignTop="@+id/influence_value"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:gravity="center"
+                    android:text="[NUMBER] "/>
+
+            </RelativeLayout>
+
 
         </LinearLayout>
         <TextView

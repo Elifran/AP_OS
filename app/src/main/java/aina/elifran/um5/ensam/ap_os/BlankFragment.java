@@ -31,7 +31,7 @@ public class BlankFragment extends Fragment {
     private TextView textView;
     private String mParam1;
     private String mParam2;
-
+    private clearDataAnalyse mListener;
     public BlankFragment() {
         // Required empty public constructor
     }
@@ -67,6 +67,7 @@ public class BlankFragment extends Fragment {
         setting_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mListener.clearData();
                 // Remplacer FragmentA par FragmentB
                 MenuFragment menu_fragment = new MenuFragment();
                 FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
@@ -82,5 +83,16 @@ public class BlankFragment extends Fragment {
         super.onConfigurationChanged(newConfig);
     }
 
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);try {
+            mListener = (clearDataAnalyse) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString() + " must implement OnDataChangeListener");
+        }
+    }
+    public interface clearDataAnalyse {
+        void clearData();
+    }
 
 }

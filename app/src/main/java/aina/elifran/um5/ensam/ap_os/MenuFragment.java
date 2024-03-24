@@ -17,7 +17,6 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Switch;
-import android.widget.Toast;
 
 
 import androidx.annotation.NonNull;
@@ -26,8 +25,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
-import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -45,11 +42,14 @@ public class MenuFragment extends Fragment {
     private FloatingActionButton setting_button;
     private Button confirm_button, track_button;
     private Switch SW1,SW2,SW3,SW4,SW5,SW6;
-    private EditText RPM,POWER,BEARING,NOISE,POWERCOEFFICIENT;
+    private EditText RPM,POWER,BEARING,NOISE,POWERCOEFFICIENT,LAG, THRESHOLD,INFLUENCE;
     private String mParam1;
     private String mParam2;
     private boolean[] SwitchValue = new boolean[5];
     private double rpmValue,powerValue,powerCoefficientValue,noiseCoefficientValue;
+
+    private int  lagValues;
+    private double thresholdValue, influenceValue;
     private int bearingValue;
     private OnDataChangeListener mListener;
 
@@ -92,6 +92,10 @@ public class MenuFragment extends Fragment {
         BEARING = view.findViewById(R.id.bearing_value);
         NOISE = view.findViewById(R.id.noise_value);
         POWERCOEFFICIENT = view.findViewById(R.id.powerCoefficient_value);
+
+        LAG = view.findViewById(R.id.lag_value);
+        THRESHOLD = view.findViewById(R.id.thershold_value);
+        INFLUENCE = view.findViewById(R.id.influence_value);
 
         SW1 = view.findViewById(R.id.switch1);
         SW2 = view.findViewById(R.id.switch2);
@@ -181,6 +185,12 @@ public class MenuFragment extends Fragment {
                 sendData(new data("SWITCH",SwitchValue));
                 sendData(new data("POWER COEFFICIENT",powerCoefficientValue));
                 sendData(new data("NOISE",noiseCoefficientValue));
+
+
+                sendData(new data("LAG",lagValues));
+                sendData(new data("THRESHOLD", thresholdValue));
+                sendData(new data("INFLUENCE", influenceValue));
+
                 closeSetting();
             }
         });
@@ -319,6 +329,66 @@ public class MenuFragment extends Fragment {
             }
         });
 
+        LAG.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+            @Override
+            public void afterTextChanged(Editable editable) {
+                String lagText = LAG.getText().toString(); // Get the text entered in POWER view
+                if (!lagText.isEmpty()) { // Check if the text is not empty
+                    try {
+                        lagValues = Integer.parseInt(lagText); // Convert text to float
+                    } catch (NumberFormatException e) {
+                        lagValues = 0;
+                    }
+                }
+            }
+        });
+        THRESHOLD.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+            @Override
+            public void afterTextChanged(Editable editable) {
+                String THERSHOLDText = THRESHOLD.getText().toString(); // Get the text entered in POWER view
+                if (!THERSHOLDText.isEmpty()) { // Check if the text is not empty
+                    try {
+                        thresholdValue = Double.parseDouble(THERSHOLDText); // Convert text to float
+                    } catch (NumberFormatException e) {
+                        thresholdValue = 0;
+                    }
+                }
+            }
+        });
+        INFLUENCE.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+            @Override
+            public void afterTextChanged(Editable editable) {
+                String influenceText = INFLUENCE.getText().toString(); // Get the text entered in POWER view
+                if (!influenceText.isEmpty()) { // Check if the text is not empty
+                    try {
+                        influenceValue = Double.parseDouble(influenceText); // Convert text to float
+                    } catch (NumberFormatException e) {
+                        influenceValue = 0;
+                    }
+                }
+            }
+        });
     }
     private void getData(Activity activity){
         if(activity instanceof MainActivity){
@@ -339,7 +409,14 @@ public class MenuFragment extends Fragment {
             noiseCoefficientValue =(double) mainActivity.getDataMain("NOISE");
                 NOISE.setText(String.valueOf(noiseCoefficientValue));
             bearingValue =(int) mainActivity.getDataMain("BEARING");
-                    BEARING.setText(String.valueOf(bearingValue));
+            BEARING.setText(String.valueOf(bearingValue));
+
+            lagValues =(int) mainActivity.getDataMain("LAG");
+                LAG.setText(String.valueOf(lagValues));
+            thresholdValue =(double) mainActivity.getDataMain("THRESHOLD");
+                THRESHOLD.setText(String.valueOf(thresholdValue));
+            influenceValue =(double) mainActivity.getDataMain("INFLUENCE");
+                INFLUENCE.setText(String.valueOf(influenceValue));
 
         }
     }

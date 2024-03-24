@@ -2,22 +2,30 @@ package aina.elifran.um5.ensam.ap_os;
 
 import android.os.Looper;
 import android.os.Handler;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 import com.jjoe64.graphview.series.DataPoint;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+
+import aina.elifran.um5.ensam.ap_os.placeholder.SignalDetector;
 
 
 public class dataAnalyse {
     private double samplingFrequency, rpmConfiguration, powerConfiguration;
     private double powerCoefficientConfiguration;  // the vibration amplitude coefficient
     private double noiseCoefficientConfiguration; // frequency outside the noise
-    private final double coeffValue = 5; // frequency pic identification
-    private final double frequencyShift = 1E0; //
+    private final double coeffValue = 1; // frequency pic identification
+    private final double frequencyShift = 0.1;
+    private int lag;
+    private Double threshold;
+    private Double influence;
     private static int bearingConfiguration;
     private boolean[] switchConfiguration;
 
@@ -40,7 +48,11 @@ public class dataAnalyse {
                 int bearing_Configuration,
                 boolean[] switch_Configuration,
                 double noise_Coefficient_Configuration,
-                double power_Coefficient_Configuration
+                double power_Coefficient_Configuration,
+                int lag,
+                Double threshold,
+                Double influence
+
                 ) {
         data_buffer = buffer;
         samplingFrequency = sampling_frequency;
@@ -50,6 +62,10 @@ public class dataAnalyse {
         switchConfiguration = switch_Configuration.clone();
         noiseCoefficientConfiguration = noise_Coefficient_Configuration;
         powerCoefficientConfiguration  = power_Coefficient_Configuration;
+
+        this.lag = lag;
+        this.threshold = threshold;
+        this.influence = influence;
 
         // initialize all array :
         dataMesureArray = new double[data_buffer];
@@ -94,7 +110,7 @@ public class dataAnalyse {
     public interface analyseDoneListener {
         void analyseDone(boolean status);
 
-        void analyseResult(List<data> result);
+        void analyseResult(List<data> result, HashMap<String,List> signalResultAnalyse);
 
         void analysePossible();
     }
@@ -103,9 +119,9 @@ public class dataAnalyse {
         this.listener = listener;
     }
 
-    private void isDone(List<data> result) {
+    private void isDone(List<data> result, HashMap<String,List> signalResultAnalyse)  {
         listener.analyseDone(true);
-        listener.analyseResult(result);
+        listener.analyseResult(result,signalResultAnalyse);
     }
 
     /*----------------------------------------------------------------------------- ask status ------------------------------------------------------------------------*/
@@ -149,11 +165,24 @@ public class dataAnalyse {
     private final Runnable dataAnalyse = new Runnable() {
         @Override
         public void run() {
+
+            double[] fftArray = dataAnalyseFft.getAbsFft(toAc(dataMesureArray.clone()));
+            List<Double> absFftValues = new ArrayList<>();
+            for (int i = 0; i < (fftArray.length / 2); i++) {absFftValues.add(fftArray[i]);}
+            HashMap<String, List> signalResultAnalyse = SignalDetector.analyzeDataForSignals(absFftValues,lag,threshold,influence);
+
+            for (Map.Entry<String, List> entry : signalResultAnalyse.entrySet()) {
+                String key = entry.getKey();
+                List value = entry.getValue();
+                String listAsString = value.toString();
+                Log.d("HashMapContent", key + ": " + listAsString);
+            }
+
             String ID = "";
             analyseResultData.clear();
             int freqShift = (int) (dataFftArray.length * frequencyShift / samplingFrequency);         //  shift frequency
             dataFftArray = cloneTrounce(dataAnalyseFft.getLogtfft(toAc(dataMesureArray.clone())),0.5); // get the absolute value of the fft
-            dataFrequencysignificantArray = findSignificantPeaks(dataFftArray, samplingFrequency, noiseCoefficientConfiguration, coeffValue);
+            dataFrequencysignificantArray = findSignificantPeaks(dataFftArray, noiseCoefficientConfiguration, coeffValue);
             List<DataPoint> dataFrequencyMultiple = dataFrequencyMultiple(dataFrequencysignificantArray, rpmConfiguration / 60.0);
             List<DataPoint> dataFrequencyMultiplebyhalf = dataFrequencyMultipleHalf(dataFrequencysignificantArray, rpmConfiguration / 60.0);
             List<DataPoint> dataFrequencyMultiplebyBearing = dataFrequencyMultipleBearing(dataFrequencysignificantArray, rpmConfiguration / 60.0);
@@ -177,7 +206,7 @@ public class dataAnalyse {
             }
             /*______________________________________________ magnet default _________________________________________*/
             if (switchConfiguration[4]) {     //electrical or mechanical default
-                int freqCentred = (int) (50*dataFftArray.length/(samplingFrequency));
+                int freqCentred = (int) (200*dataFftArray.length/(samplingFrequency));
                 double[] data1 = getMaxAnalyse(dataFftArray, freqCentred - freqShift, freqCentred + freqShift);
                 analyseResultData.add(new data("Bobine State --------------> @ " + data1[1]*samplingFrequency/dataFftArray.length + ": ", data1[0]));//'Math.pow(10, data1[0]/20) * powerCoefficientConfiguration / powerConfiguration));
             }
@@ -213,17 +242,17 @@ public class dataAnalyse {
 
 
             /*----------------------------------------------------------**------------------------------------------------------------*/
-            isDone(analyseResultData);     // send to the interface that the analyse is done
+            isDone(analyseResultData,signalResultAnalyse);     // send to the interface that the analyse is done
             analyseStatus = false;                    // analyse done
             counter = 0;                              //reset the counter
             /*----------------------------------------------------------**------------------------------------------------------------*/
         }
     };
 
-    public double[] getMaxAnalyse(@NonNull double[] data, int low, int hight) {
+    public double[] getMaxAnalyse(@NonNull double[] data, int low, int height) {
         double max = -1.0E100;
         int pos = 0;
-        for (int i = low; i <= hight; i++) {
+        for (int i = low; i <= height + 1; i++) {
             if (max < data[i]) {
                 max = data[i];
                 pos = i;
@@ -234,7 +263,7 @@ public class dataAnalyse {
 
 
     /*-------------------------------------------------------------------------------------get all frequency pic-----------------------------------------------------------*/
-    public static List<DataPoint> findSignificantPeaks(double[] dataArray, double samplingFrequency, double threshold, double significanceThreshold) {
+    public static List<DataPoint> findSignificantPeaks(double[] dataArray, double threshold, double significanceThreshold) {
         List<DataPoint> peaks = new ArrayList<>();
         // to find the pic significant frequency
         for (int i = 1; i < dataArray.length - 1; i++) {
@@ -246,7 +275,7 @@ public class dataAnalyse {
     }
 
     private static boolean isSignificantPeak(double[] dataArray, int index, double significanceThreshold) {
-        return dataArray[index] > Math.max(dataArray[index - 1], dataArray[index + 1]) - 20*Math.log(significanceThreshold);
+        return dataArray[index] > Math.max(dataArray[index - 1], dataArray[index + 1]) + 20*Math.log(significanceThreshold);
     }
 
     /*---------------------------------------------------------------------------------------get only the frequency multiple of rpm frequency--------------------------------------------*/
@@ -293,10 +322,10 @@ public class dataAnalyse {
     public double[] toAc(@NonNull double[] data){
         double[] temp = data.clone();
         double val = 0;
-        for (double datum : data) val = val + datum;
-        val = val/(data.length);
-        for (int i = 0;i<data.length;i++) {
-            temp[i] = data[i] - val;
+        for (double datum : temp) val = val + datum;
+        val = val/(temp.length);
+        for (int i = 0;i<temp.length;i++) {
+            temp[i] = temp[i] - val;
         }
         return temp;
     }

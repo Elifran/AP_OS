@@ -32,12 +32,13 @@ import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 
-public class MainActivity extends AppCompatActivity implements SensorEventListener, MenuFragment.OnDataChangeListener,dataAnalyse.analyseDoneListener, velocityTracking.velocityTrackingInterface {
+public class MainActivity extends AppCompatActivity implements SensorEventListener, MenuFragment.OnDataChangeListener,dataAnalyse.analyseDoneListener, velocityTracking.velocityTrackingInterface, BlankFragment.clearDataAnalyse {
     int counter = 0;
     private TextView OutputX, OutputY, OutputZ,data_output_label,analyse_result;
     private Button button_stop,button_param;
@@ -47,8 +48,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     LinearLayout command_layout_set_params;
     SensorManager sensorManager;
     Sensor OutputSensor;
-    private final int data_lenght = 2048*4; // min 256
-    private final int print_scale = 512;
+    private final int data_lenght = 2048*2; // min 256
+    private final int print_scale = 256;
     private volatile double[][] data_sensor_array;
     private volatile  double[][] data_fft_array;
     public static long act_timestamp, last_timestamp,step_time;
@@ -61,6 +62,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private static double powerCoefficientConfiguration = 10E+0;
     private static double noiseCoefficientConfiguration = -140;
     private int bearingConfiguration = 12;
+    private int  lag = 32;
+    private double  threshold= 8.0;
+    private double  influence= 0.9;
+
     private double samplingFrequency;
     private double[][] maxFrequency;
     private filter Xfilterdata;
@@ -167,7 +172,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         filterStatus = true;        // avoid recreation of the filter class
                         Toast.makeText(getApplicationContext(), "Filter initialized at Fe :" + samplingFrequency + "Hz", Toast.LENGTH_LONG).show();
 
-                        dataAnalyseVar = new dataAnalyse(analyseBuffer, samplingFrequency,rpmConfiguration,powerConfiguration,bearingConfiguration,switchConfiguration, noiseCoefficientConfiguration, powerCoefficientConfiguration);
+                        dataAnalyseVar = new dataAnalyse(   analyseBuffer,
+                                                            samplingFrequency,
+                                                            rpmConfiguration,
+                                                            powerConfiguration,
+                                                            bearingConfiguration,
+                                                            switchConfiguration,
+                                                            noiseCoefficientConfiguration,
+                                                            powerCoefficientConfiguration,
+                                                            lag,
+                                                            threshold,
+                                                            influence
+                                                            );
                         dataAnalyseVar.setAnalyseDoneListener(this);
 
                     }
@@ -241,6 +257,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 case "NOISE" :
                     noiseCoefficientSetting((double)data.getValue());
                     break;
+                case "LAG" :
+                    lagSetting((int)data.getValue());
+                    break;
+                case "THRESHOLD" :
+                    thresholdSetting((double)data.getValue());
+                    break;
+                case "INFLUENCE" :
+                    influenceSetting((double)data.getValue());
+                    break;
                 default:
                     break;
             }
@@ -289,8 +314,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             case "POWER COEFFICIENT":
                 Value = powerCoefficientConfiguration;
                 break;
-                case "NOISE":
+            case "NOISE":
                 Value = noiseCoefficientConfiguration;
+                break;
+
+            case "LAG":
+                Value = lag;
+                break;
+            case "THRESHOLD":
+                Value = threshold;
+                break;
+            case "INFLUENCE":
+                Value = influence;
                 break;
 
             default:
@@ -464,6 +499,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void powerCoefficientSetting(double powerCoeffData){
         powerCoefficientConfiguration = powerCoeffData;
     }
+
+    private void lagSetting(int lagData){
+        lag = lagData;
+    }
+    private void thresholdSetting(double powerCoeffData){
+        threshold = powerCoeffData;
+    }
+    private void influenceSetting(double influenceData){
+        influence = influenceData;
+    }
+
     private void powerSetting(double powerData){
         powerConfiguration = powerData;
     }
@@ -579,14 +625,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @SuppressLint("SetTextI18n")
     @Override
     public void analyseDone(boolean status) {
-
         button_param.setText("DONE - ANALYSE");
         Toast.makeText(getApplicationContext(), "Analyse Done", Toast.LENGTH_SHORT).show();
     }
     @SuppressLint("SetTextI18n")
     @Override
-    public void analyseResult(List<data> result) {
-        analyse_result.setText("The result is : \n");
+    public void analyseResult(List<data> result, HashMap<String,List> signalResultAnalyse) {
+        analyse_result.setText("");
+        Integer cnt = 0,cnt1 = 0;
+        if (signalResultAnalyse.containsKey("signals")) {
+            List<Integer> res = signalResultAnalyse.get("signals");
+            for (Integer Val : res) {
+                if (Val == 1) {
+                    cnt++;
+                    analyse_result.append("@ : " + cnt1*samplingFrequency/(2*res.size()) + "\n");
+                }
+                cnt1++;
+            }
+        }
+        analyse_result.append("The result is : \n" + "Number Of Pics : " + cnt +"\n");
         for (data resultdata:result){
             //String truncatedValue = String.valueOf(resultdata.getValue()).substring(0, Math.min(String.valueOf(resultdata.getValue()).length(), 8));
             analyse_result.append(resultdata.getId() +  resultdata.getValue() + "% \n");
@@ -624,6 +681,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     case "powerCoefficientConfiguration":
                         powerCoefficientConfiguration = (double)(float)entry.getValue();
                         break;
+                    case "lag":
+                        lag = (int)entry.getValue();
+                        break;
+                    case "threshold":
+                        threshold = (double)(float)entry.getValue();
+                        break;
+                    case "influence":
+                        influence = (double)(float)entry.getValue();
+                        break;
+
                     case "SW1":
                         switchConfiguration[0]= (boolean)entry.getValue();
                         break;
@@ -655,6 +722,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         preferences.writePreferences(getApplicationContext(),"bearingConfiguration",bearingConfiguration);
         preferences.writePreferences(getApplicationContext(),"noiseCoefficientConfiguration",noiseCoefficientConfiguration);
         preferences.writePreferences(getApplicationContext(),"powerCoefficientConfiguration",powerCoefficientConfiguration);
+
+        preferences.writePreferences(getApplicationContext(),"lag",lag);
+        preferences.writePreferences(getApplicationContext(),"threshold",threshold);
+        preferences.writePreferences(getApplicationContext(),"influence",influence);
 
         preferences.writePreferences(getApplicationContext(),"SW1",switchConfiguration[0]);
         preferences.writePreferences(getApplicationContext(),"SW2",switchConfiguration[1]);
@@ -688,7 +759,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         fragmentTransaction2.replace(R.id.fragmentContainerVelocity, fragment2);
         fragmentTransaction2.commit();
     }
+
+    @Override
+    public void clearData() {
+        if (analyseData){
+            analyseData = false;
+            button_param.setText("RE-DO - ANALYSE");
+        }
+        analyse_result.setText("");
+    }
     /*--------------------------------------------------------------------------------not used function -----------------------------------------------------------*/
+
 
 }
 
