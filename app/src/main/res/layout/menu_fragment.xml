@@ -51,6 +51,43 @@
                 android:text="What are We analyse for? Select : " />
 
             <RelativeLayout
+                android:id="@+id/resolution"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/resolutionLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/resolution_value"
+                    android:layout_alignTop="@+id/resolution_value"
+                    android:gravity="center"
+                    android:text="Analyse Resolution           "
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentLeft="true"
+                    />
+                <EditText
+                    android:id="@+id/resolution_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toEndOf="@+id/resolutionLabel"
+                    android:layout_toRightOf="@+id/resolutionLabel"
+                    android:layout_toStartOf="@+id/resolutionIndice"
+                    android:layout_toLeftOf="@+id/resolutionIndice"
+                    android:inputType="number"
+                    />
+                <TextView
+                    android:id="@+id/resolutionIndice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/resolution_value"
+                    android:layout_alignTop="@+id/resolution_value"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:gravity="center"
+                    android:text="             [ 1 - **()]      "/>
+            </RelativeLayout>
+
+            <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
 
@@ -228,7 +265,8 @@
                     android:gravity="center"
                     android:text="[kW]           "/>
 
-            </RelativeLayout>            <RelativeLayout
+            </RelativeLayout>
+            <RelativeLayout
             android:id="@+id/powerCoefficient"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">

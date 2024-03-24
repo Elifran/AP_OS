@@ -3,12 +3,14 @@ package aina.elifran.um5.ensam.ap_os;
 import android.os.Looper;
 import android.os.Handler;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
 import com.jjoe64.graphview.series.DataPoint;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,14 +24,14 @@ public class dataAnalyse {
     private double powerCoefficientConfiguration;  // the vibration amplitude coefficient
     private double noiseCoefficientConfiguration; // frequency outside the noise
     private final double coeffValue = 1; // frequency pic identification
-    private final double frequencyShift = 0.1;
+    private final double frequencyShift = 2.0E-1;
     private int lag;
     private Double threshold;
     private Double influence;
     private static int bearingConfiguration;
     private boolean[] switchConfiguration;
 
-    private double[] dataFftArray;
+    private List<Double> dataFftArray;
     private double[] dataMesureArray;
     private long[] dataTimeArray;
     private List<DataPoint> dataFrequencysignificantArray;
@@ -69,7 +71,7 @@ public class dataAnalyse {
 
         // initialize all array :
         dataMesureArray = new double[data_buffer];
-        dataFftArray = new double[data_buffer / 2];
+        dataFftArray = new ArrayList<>(Collections.nCopies(data_buffer/2, 0.0d));
         dataTimeArray = new long[data_buffer];
         dataAnalyseFft = new fft(data_buffer);
 
@@ -166,11 +168,11 @@ public class dataAnalyse {
         @Override
         public void run() {
 
-            double[] fftArray = dataAnalyseFft.getAbsFft(toAc(dataMesureArray.clone()));
-            List<Double> absFftValues = new ArrayList<>();
-            for (int i = 0; i < (fftArray.length / 2); i++) {absFftValues.add(fftArray[i]);}
-            HashMap<String, List> signalResultAnalyse = SignalDetector.analyzeDataForSignals(absFftValues,lag,threshold,influence);
+            dataFftArray = cloneTrounce(dataAnalyseFft.getAbsFft(toAc(dataMesureArray.clone())),0.5); // get the absolute value of the fft
+            HashMap<String, List> signalResultAnalyse = SignalDetector.analyzeDataForSignals(dataFftArray,lag,threshold,influence);
+            dataFrequencysignificantArray =  getPeakPos(signalResultAnalyse.get("signals"));
 
+    // log the result
             for (Map.Entry<String, List> entry : signalResultAnalyse.entrySet()) {
                 String key = entry.getKey();
                 List value = entry.getValue();
@@ -178,55 +180,54 @@ public class dataAnalyse {
                 Log.d("HashMapContent", key + ": " + listAsString);
             }
 
-            String ID = "";
+            List<DataPoint> dataFrequencyMultiple = dataFrequencyMultiple(dataFrequencysignificantArray, rpmConfiguration /60.0,frequencyShift);
+            List<DataPoint> dataFrequencyMultipleByHalf = dataFrequencyMultiple(dataFrequencysignificantArray, rpmConfiguration / (2*60.0),frequencyShift);
+            List<DataPoint> dataFrequencyMultipleByBearing = dataFrequencyMultiple(dataFrequencysignificantArray, rpmConfiguration * bearingConfiguration / 60.0,frequencyShift);
+            List<DataPoint> dataFrequencyMultipleByFREQ = dataFrequencyMultiple(dataFrequencysignificantArray, 50.0,frequencyShift);
+
             analyseResultData.clear();
-            int freqShift = (int) (dataFftArray.length * frequencyShift / samplingFrequency);         //  shift frequency
-            dataFftArray = cloneTrounce(dataAnalyseFft.getLogtfft(toAc(dataMesureArray.clone())),0.5); // get the absolute value of the fft
-            dataFrequencysignificantArray = findSignificantPeaks(dataFftArray, noiseCoefficientConfiguration, coeffValue);
-            List<DataPoint> dataFrequencyMultiple = dataFrequencyMultiple(dataFrequencysignificantArray, rpmConfiguration / 60.0);
-            List<DataPoint> dataFrequencyMultiplebyhalf = dataFrequencyMultipleHalf(dataFrequencysignificantArray, rpmConfiguration / 60.0);
-            List<DataPoint> dataFrequencyMultiplebyBearing = dataFrequencyMultipleBearing(dataFrequencysignificantArray, rpmConfiguration / 60.0);
-            ID = "Number of pick frequency fond : ";
-            for (DataPoint dataIn: dataFrequencysignificantArray){
-                 ID += String.valueOf(dataIn.getY()) + " | " + String.valueOf(dataIn.getX()*samplingFrequency/data_buffer) + "\n";
+            String ID;
+            ID = " Number of pick frequency fond : \n";
+            for (DataPoint dataIn: dataFrequencyMultiple){
+                 ID += String.valueOf(dataIn.getY())+ " | @ " + String.valueOf(dataIn.getX()) + "\n";
             }
-            analyseResultData.add(new data(ID, dataFrequencysignificantArray.size()));
+            analyseResultData.add(new data(ID, dataFrequencyMultiple.size()));
 
             /*______________________________________________ static default _________________________________________*/
             if (switchConfiguration[0]) {     // static vibration unbalanced
-                int freqCentred = (int) ((rpmConfiguration/60.0) * dataFftArray.length/(samplingFrequency));
-                double[] data1 = getMaxAnalyse(dataFftArray, freqCentred - freqShift, freqCentred + freqShift);
-                analyseResultData.add(new data("Static Vibration State ----> @ " + data1[1]*samplingFrequency/dataFftArray.length + ": ", data1[0]));//Math.pow(10, data1[0]/20) * powerCoefficientConfiguration / powerConfiguration));
+                double freqCentred = rpmConfiguration/60.0;
+                DataPoint data1 = getMaxAnalyse(dataFrequencyMultiple, freqCentred - frequencyShift, freqCentred + frequencyShift);
+                analyseResultData.add(new data("Static Vibration State ----> @ " + data1.getX() + ": ", data1.getY()));//Math.pow(10, data1[0]/20) * powerCoefficientConfiguration / powerConfiguration));
             }
             /*_____________________________________________ dynamic default _________________________________________*/
             if (switchConfiguration[1]) {     //dynamic vibration unbalanced
-                int freqCentred = (int) ((rpmConfiguration * 2.0/60.0) * dataFftArray.length/(samplingFrequency));
-                double[] data1 = getMaxAnalyse(dataFftArray, freqCentred - freqShift, freqCentred + freqShift);
-                analyseResultData.add(new data("Dynamic Vibration State ---> @ " + data1[1]*samplingFrequency/dataFftArray.length + ": ", data1[0]));//Math.pow(10, data1[0]/20) * powerCoefficientConfiguration / powerConfiguration));
+                double freqCentred = rpmConfiguration * 2.0/60.0;
+                DataPoint data1 = getMaxAnalyse(dataFrequencyMultiple, freqCentred - frequencyShift, freqCentred + frequencyShift);
+                analyseResultData.add(new data("Dynamic Vibration State ---> @ " + data1.getX() + ": ", data1.getY()));//Math.pow(10, data1[0]/20) * powerCoefficientConfiguration / powerConfiguration));
             }
             /*______________________________________________ magnet default _________________________________________*/
             if (switchConfiguration[4]) {     //electrical or mechanical default
-                int freqCentred = (int) (200*dataFftArray.length/(samplingFrequency));
-                double[] data1 = getMaxAnalyse(dataFftArray, freqCentred - freqShift, freqCentred + freqShift);
-                analyseResultData.add(new data("Bobine State --------------> @ " + data1[1]*samplingFrequency/dataFftArray.length + ": ", data1[0]));//'Math.pow(10, data1[0]/20) * powerCoefficientConfiguration / powerConfiguration));
+                double freqCentred =  50.0;
+                DataPoint data1 = getMaxAnalyse(dataFrequencyMultipleByFREQ, freqCentred - frequencyShift, freqCentred + frequencyShift);
+                analyseResultData.add(new data("Bobine State --------------> @ " + data1.getX() + ": ", data1.getY()));//'Math.pow(10, data1[0]/20) * powerCoefficientConfiguration / powerConfiguration));
             }
             /*__________________________________________ mechanical  looseness ______________________________________*/
             if (switchConfiguration[2]) {     //mechanical looseness : presented by harmonic 0.5 of the main freuqency
                 double Temp = 0.0;
-                for (DataPoint data : dataFrequencyMultiplebyhalf){
+                for (DataPoint data : dataFrequencyMultipleByHalf){
                     Temp += data.getY();
                 }
-                Temp /= dataFrequencyMultiplebyhalf.isEmpty() ? 1 : dataFrequencyMultiplebyhalf.size();
+                Temp /= dataFrequencyMultipleByHalf.isEmpty() ? 1 : dataFrequencyMultipleByHalf.size();
                 analyseResultData.add(new data("Looseness default State -----> ", Temp * powerCoefficientConfiguration / powerConfiguration));
             }
             /*______________________________________________ bearing default _________________________________________*/
             if (switchConfiguration[3]) {     //bearing fault
                 double Temp = 0.0;
 
-                for (DataPoint data : dataFrequencyMultiplebyBearing){
+                for (DataPoint data : dataFrequencyMultipleByBearing){
                     Temp += data.getY();
                 }
-                Temp /= dataFrequencyMultiplebyBearing.isEmpty() ? 1 : dataFrequencyMultiplebyBearing.size();
+                Temp /= dataFrequencyMultipleByBearing.isEmpty() ? 1 : dataFrequencyMultipleByBearing.size();
                 analyseResultData.add(new data("Bearing default State -----> ", Temp * powerCoefficientConfiguration / powerConfiguration));
             }
 
@@ -249,24 +250,28 @@ public class dataAnalyse {
         }
     };
 
-    public double[] getMaxAnalyse(@NonNull double[] data, int low, int height) {
-        double max = -1.0E100;
-        int pos = 0;
-        for (int i = low; i <= height + 1; i++) {
-            if (max < data[i]) {
-                max = data[i];
-                pos = i;
-            }
-        }
-        return (new double[]{max, pos});
+    public DataPoint getMaxAnalyse(@NonNull List<DataPoint> dataIn, double low, double  high) {
+        DataPoint dataPoint = new DataPoint(0.0,0.0);
+        for (DataPoint data : dataIn)
+            if (data.getX() >= low)
+                if (data.getX() <= high)
+                    if (dataPoint.getY() < data.getY())
+                        dataPoint = data;
+        return dataPoint;
     }
 
 
     /*-------------------------------------------------------------------------------------get all frequency pic-----------------------------------------------------------*/
-    public static List<DataPoint> findSignificantPeaks(double[] dataArray, double threshold, double significanceThreshold) {
+    public List<DataPoint> findSignificantPeaks(List<Double> dataList, double threshold, double significanceThreshold) {
         List<DataPoint> peaks = new ArrayList<>();
+        double[] dataArray = new double[dataList.size()];
+        int i = 0;
+        for (double data:dataList) {
+            dataArray[i] = data;
+            i++;
+        }
         // to find the pic significant frequency
-        for (int i = 1; i < dataArray.length - 1; i++) {
+        for (i = 1; i < dataArray.length - 1; i++) {
             if (dataArray[i] > threshold && isSignificantPeak(dataArray, i, significanceThreshold)) {
                 peaks.add(new DataPoint(i, dataArray[i]));
             }
@@ -274,48 +279,34 @@ public class dataAnalyse {
         return peaks;
     }
 
-    private static boolean isSignificantPeak(double[] dataArray, int index, double significanceThreshold) {
+    private  boolean isSignificantPeak(double[] dataArray, int index, double significanceThreshold) {
         return dataArray[index] > Math.max(dataArray[index - 1], dataArray[index + 1]) + 20*Math.log(significanceThreshold);
     }
 
     /*---------------------------------------------------------------------------------------get only the frequency multiple of rpm frequency--------------------------------------------*/
-    private static List<DataPoint> dataFrequencyMultiple(List<DataPoint> dataFrequency, double frequency) {
+    private List<DataPoint> dataFrequencyMultiple0(List<DataPoint> dataFrequency, double frequency, double tolerance) {
         List<DataPoint> resultArray = new ArrayList<>();
         for (DataPoint data : dataFrequency) {
-            if (Math.abs(data.getX() % frequency) < 1E-3) // remove main frequency
-                resultArray.add(data);
-        }
-        return resultArray;
-    }
-    private static List<DataPoint> dataFrequencyMultipleHalf(List<DataPoint> dataFrequency, double frequency) {
-        List<DataPoint> resultArray = new ArrayList<>();
-        for (DataPoint data : dataFrequency) {
-            if (Math.abs(data.getX() % frequency/2.0) < 1E-3 && (data.getY() / frequency) > 0.4) // remove main frequency
-                resultArray.add(data);
-        }
-        return resultArray;
-    }
-    private static List<DataPoint> dataFrequencyMultipleBearing(List<DataPoint> dataFrequency, double frequency) {
-        List<DataPoint> resultArray = new ArrayList<>();
-        for (DataPoint data : dataFrequency) {
-            if (Math.abs(data.getX() % frequency*bearingConfiguration) < 1E-3 && (data.getY() / frequency) > 1.5) // remove main frequency
+            if (Math.abs(data.getX() - frequency) <= tolerance)
                 resultArray.add(data);
         }
         return resultArray;
     }
 
-    /*--------------------------------------------------------------------------------------convert timline into frequency------------------------------------------------------------------*/
-    private static List<DataPoint> lineToFrequency(List<DataPoint> dataList, double samplingFrequency, double Length) {
-        List<DataPoint> resultData = new ArrayList<>();
-        for (DataPoint data : dataList) {
-
-            resultData.add(new DataPoint(data.getX() * 2 * samplingFrequency / Length, data.getY()));
+    private List<DataPoint> dataFrequencyMultiple(List<DataPoint> dataFrequency, double frequency, double tolerance) {
+        List<DataPoint> resultArray = new ArrayList<>();
+        for (DataPoint data : dataFrequency) {
+            double remainder = Math.abs(data.getX() % frequency);
+            if (remainder <= tolerance || Math.abs(remainder - frequency) <= tolerance)
+                resultArray.add(data);
         }
-        return resultData;
+        return resultArray;
     }
-    public static double[] cloneTrounce(double[] data, double truncatedCoefficient){
-        double[] resultData = new double[(int) (data.length * truncatedCoefficient)];
-        System.arraycopy(data, 0, resultData, 0, resultData.length);
+
+    public List<Double> cloneTrounce(double[] data, double truncatedCoefficient){
+        List<Double> resultData = new ArrayList<>();
+        for ( int i = 0; i<data.length*truncatedCoefficient; i++)
+            resultData.add(data[i]);
         return resultData;
     }
 
@@ -328,5 +319,17 @@ public class dataAnalyse {
             temp[i] = temp[i] - val;
         }
         return temp;
+    }
+
+    private List<DataPoint> getPeakPos(List<Integer> dataIn){
+        List<DataPoint>  data= new  ArrayList<>();
+        int i = 0;
+        for (Integer dataOut:dataIn){
+            if (dataOut == 1){
+                data.add(new DataPoint(i*samplingFrequency/(2.0*dataIn.size()),dataFftArray.get(i)));
+            }
+            i++;
+        }
+        return data;
     }
 }

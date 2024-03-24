@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private static final double cutOffFrequency = 0.485; // must be less than 0.5
     private Handler dofftHandler,doplotHandler,doprintHandler;
     boolean analyseData = false;
-    int analyseBuffer = 2048*16;
+    int analyseBuffer = 2048*2;
     dataAnalyse dataAnalyseVar;
     boolean trackVelocity;
     static velocityTracking velocityTracking;
@@ -638,7 +638,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             for (Integer Val : res) {
                 if (Val == 1) {
                     cnt++;
-                    analyse_result.append("@ : " + cnt1*samplingFrequency/(2*res.size()) + "\n");
+                    //analyse_result.append("@ : " + cnt1*samplingFrequency/(2*res.size()) + "\n");
                 }
                 cnt1++;
             }
