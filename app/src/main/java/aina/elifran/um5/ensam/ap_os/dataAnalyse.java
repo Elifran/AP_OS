@@ -211,7 +211,7 @@ public class dataAnalyse {
             analyseResultData.add(new data(ID, dataFrequencyMultiple.size()));
 
             ID = "Resolution Level : ";
-            analyseResultData.add(new data(ID,(int)Math.log(data_buffer/512)/Math.log(2)-3));
+            analyseResultData.add(new data(ID,(int)(Math.log(data_buffer/512)/Math.log(2)-3)));
 
             /*______________________________________________ static default _________________________________________*/
             if (switchConfiguration[0]) {     // static vibration unbalanced
