@@ -32,10 +32,12 @@ public class dataAnalyse {
     private boolean[] switchConfiguration;
 
     private List<Double> dataFftArray;
-    private double[] dataMesureArray;
-    private long[] dataTimeArray;
+    //private double[] dataMesureArray;
+    private List<Double> dataMesureArray;
+    //private long[] dataTimeArray;
+    private List<Integer> dataTimeArray;
     private List<DataPoint> dataFrequencysignificantArray;
-    private final int data_buffer;
+    private int data_buffer;
     private boolean analyseStatus = false;
     private final fft dataAnalyseFft;
     long counter;
@@ -70,17 +72,31 @@ public class dataAnalyse {
         this.influence = influence;
 
         // initialize all array :
-        dataMesureArray = new double[data_buffer];
-        dataFftArray = new ArrayList<>(Collections.nCopies(data_buffer/2, 0.0d));
-        dataTimeArray = new long[data_buffer];
+        //dataMesureArray = new double[data_buffer];
+        changeResolution(buffer);
+        //dataTimeArray = new long[data_buffer];
         dataAnalyseFft = new fft(data_buffer);
-
         analyseHandler = new Handler(Objects.requireNonNull(Looper.myLooper()));
     }
+    private void changeResolution(int lengh){
+        data_buffer = lengh;
+        try {dataMesureArray.clear();} catch (Exception e){}
+        try {dataFftArray.clear();}catch (Exception e){}
+        try {dataTimeArray.clear();}catch (Exception e){}
 
+        dataMesureArray = new ArrayList<>(Collections.nCopies(data_buffer, 0.0d));
+        dataFftArray = new ArrayList<>(Collections.nCopies(data_buffer/2, 0.0d));
+        dataTimeArray = new ArrayList<>(Collections.nCopies(data_buffer, 0));
+    }
     public void setConfig(String Config,
                           Object Value) {
         switch (Config) {
+            case "RESOLUTION":
+                //counter = 0;
+                data_buffer = (int) (Math.pow(2,(int)Value)*2048);
+                dataAnalyseFft.chancheResolution(data_buffer);
+                changeResolution(data_buffer);
+                break;
             case "SAMPLING FREQ":
                 //counter = 0;
                 samplingFrequency = (double) Value;
@@ -154,13 +170,14 @@ public class dataAnalyse {
     }
 
     /*------------------------------------------------------------------------- move data to to the left --------------------------------------------------------------*/
-    private void shiftRight(@NonNull double[] dataArray, long[] arrayTime, double dataIn, long timestamp) {
+    //private void shiftRight(@NonNull double[] dataArray, long[] arrayTime, double dataIn, long timestamp) {
+    private void shiftRight(@NonNull List<Double> dataArray,List<Integer> arrayTime, double dataIn, long timestamp) {
         for (int i = data_buffer - 1; i > 0; i--) {
-            dataArray[i] = dataArray[i - 1];
-            arrayTime[i] = arrayTime[i - 1] + timestamp;
+            dataArray.set(i,dataArray.get(i - 1));
+            arrayTime.set(i,arrayTime.get(i - 1) + (int) timestamp);
         }
-        arrayTime[0] = 0;
-        dataArray[0] = dataIn;
+        arrayTime.set(0,0);
+        dataArray.set(0,dataIn);
     }
 
     /*----------------------------------------------------------------------------- data analyse task -----------------------------------------------------------------*/
@@ -168,7 +185,7 @@ public class dataAnalyse {
         @Override
         public void run() {
 
-            dataFftArray = cloneTrounce(dataAnalyseFft.getAbsFft(toAc(dataMesureArray.clone())),0.5); // get the absolute value of the fft
+            dataFftArray = cloneTrounce(dataAnalyseFft.getAbsFft(toAc(dataMesureArray)),0.5); // get the absolute value of the fft
             HashMap<String, List> signalResultAnalyse = SignalDetector.analyzeDataForSignals(dataFftArray,lag,threshold,influence);
             dataFrequencysignificantArray =  getPeakPos(signalResultAnalyse.get("signals"));
 
@@ -310,12 +327,17 @@ public class dataAnalyse {
         return resultData;
     }
 
-    public double[] toAc(@NonNull double[] data){
-        double[] temp = data.clone();
+    public double[] toAc(@NonNull List<Double> data){
+        double[] temp = new double[data.size()];
+        int i = 0;
+        for (double dt : data) {
+            temp[i] = dt;
+            i++;
+        }
         double val = 0;
         for (double datum : temp) val = val + datum;
         val = val/(temp.length);
-        for (int i = 0;i<temp.length;i++) {
+        for (i = 0;i<temp.length;i++) {
             temp[i] = temp[i] - val;
         }
         return temp;

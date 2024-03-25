@@ -25,8 +25,17 @@ public class velocityTracking{
     public void setEstimatedVelocity(double estimated_Velocity){
         estimatedVelocity = estimated_Velocity/60;
     }
-    public void addDataTrack(double[] data1,double[] data2,double[] data3, double sampling_Frequency){
-        dataArrayFft = new double[][]{data1, data2, data3};
+    public void addDataTrack(List<List<Double>> data, double sampling_Frequency){
+        dataArrayFft = new double[data.size()][data.get(0).size()];
+        int i = 0;
+        for (List<Double> dataList: data){
+            int j = 0;
+            for (Double dataD : dataList) {
+                dataArrayFft[i][j] = dataD;
+                j++;
+            }
+            i++;
+        }
         samplingFrequency = sampling_Frequency;
         track();
     }

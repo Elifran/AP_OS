@@ -42,13 +42,13 @@ public class MenuFragment extends Fragment {
     private FloatingActionButton setting_button;
     private Button confirm_button, track_button;
     private Switch SW1,SW2,SW3,SW4,SW5,SW6;
-    private EditText RPM,POWER,BEARING,NOISE,POWERCOEFFICIENT,LAG, THRESHOLD,INFLUENCE;
+    private EditText RPM,POWER,BEARING,NOISE,POWERCOEFFICIENT,LAG, THRESHOLD,INFLUENCE, RESOLUTION;
     private String mParam1;
     private String mParam2;
     private boolean[] SwitchValue = new boolean[5];
     private double rpmValue,powerValue,powerCoefficientValue,noiseCoefficientValue;
 
-    private int  lagValues;
+    private int  lagValues,resolutionValue;
     private double thresholdValue, influenceValue;
     private int bearingValue;
     private OnDataChangeListener mListener;
@@ -92,6 +92,8 @@ public class MenuFragment extends Fragment {
         BEARING = view.findViewById(R.id.bearing_value);
         NOISE = view.findViewById(R.id.noise_value);
         POWERCOEFFICIENT = view.findViewById(R.id.powerCoefficient_value);
+
+        RESOLUTION = view.findViewById(R.id.resolution_value);
 
         LAG = view.findViewById(R.id.lag_value);
         THRESHOLD = view.findViewById(R.id.thershold_value);
@@ -186,6 +188,7 @@ public class MenuFragment extends Fragment {
                 sendData(new data("POWER COEFFICIENT",powerCoefficientValue));
                 sendData(new data("NOISE",noiseCoefficientValue));
 
+                sendData(new data("RESOLUTION",resolutionValue));
 
                 sendData(new data("LAG",lagValues));
                 sendData(new data("THRESHOLD", thresholdValue));
@@ -328,6 +331,26 @@ public class MenuFragment extends Fragment {
                 }
             }
         });
+        RESOLUTION.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+            @Override
+            public void afterTextChanged(Editable editable) {
+                String resText = RESOLUTION.getText().toString(); // Get the text entered in POWER view
+                if (!resText.isEmpty()) { // Check if the text is not empty
+                    try {
+                        resolutionValue = Integer.parseInt(resText); // Convert text to float
+                    } catch (NumberFormatException e) {
+                        resolutionValue = 0;
+                    }
+                }
+            }
+        });
 
         LAG.addTextChangedListener(new TextWatcher() {
             @Override
@@ -410,6 +433,9 @@ public class MenuFragment extends Fragment {
                 NOISE.setText(String.valueOf(noiseCoefficientValue));
             bearingValue =(int) mainActivity.getDataMain("BEARING");
             BEARING.setText(String.valueOf(bearingValue));
+
+            resolutionValue =(int) mainActivity.getDataMain("RESOLUTION");
+                RESOLUTION.setText(String.valueOf(resolutionValue));
 
             lagValues =(int) mainActivity.getDataMain("LAG");
                 LAG.setText(String.valueOf(lagValues));

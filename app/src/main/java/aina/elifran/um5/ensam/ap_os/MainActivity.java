@@ -32,6 +32,7 @@ import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,8 +51,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     Sensor OutputSensor;
     private final int data_lenght = 2048*2; // min 256
     private final int print_scale = 256;
-    private volatile double[][] data_sensor_array;
-    private volatile  double[][] data_fft_array;
+    //private volatile double[][] data_sensor_array;
+    private volatile List<List<Double>> data_sensor_array;
+    //private volatile  double[][] data_fft_array;
+    private volatile List<List<Double>> data_fft_array;
     public static long act_timestamp, last_timestamp,step_time;
     private static int data_counter = 0;
     private boolean flag = false, flag2 = false, s_flag, ready = false,filterStatus = false;
@@ -65,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private int  lag = 32;
     private double  threshold= 8.0;
     private double  influence= 0.9;
-
+    int analyseBuffer = 2048*2;
     private double samplingFrequency;
     private double[][] maxFrequency;
     private filter Xfilterdata;
@@ -75,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private static final double cutOffFrequency = 0.485; // must be less than 0.5
     private Handler dofftHandler,doplotHandler,doprintHandler;
     boolean analyseData = false;
-    int analyseBuffer = 2048*2;
+
     dataAnalyse dataAnalyseVar;
     boolean trackVelocity;
     static velocityTracking velocityTracking;
@@ -107,8 +110,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         output_label = findViewById(R.id.output_label);
         analyse_result = findViewById(R.id.analyse_result);
 
-        data_sensor_array = new double[4][data_lenght];
-        data_fft_array = new double[4][data_lenght];
+        //data_sensor_array = new double[4][data_lenght];
+        data_sensor_array = new ArrayList<>();
+        data_sensor_array.add(new ArrayList<Double>(Collections.nCopies(data_lenght, 0d)));
+        data_sensor_array.add(new ArrayList<Double>(Collections.nCopies(data_lenght, 0d)));
+        data_sensor_array.add(new ArrayList<Double>(Collections.nCopies(data_lenght, 0d)));
+        data_sensor_array.add(new ArrayList<Double>(Collections.nCopies(data_lenght, 0d)));
+
+        //data_fft_array = new double[4][data_lenght];
+        data_fft_array = new ArrayList<>();
+        data_fft_array.add(new ArrayList<Double>(Collections.nCopies(data_lenght, 0d)));
+        data_fft_array.add(new ArrayList<Double>(Collections.nCopies(data_lenght, 0d)));
+        data_fft_array.add(new ArrayList<Double>(Collections.nCopies(data_lenght, 0d)));
+        data_fft_array.add(new ArrayList<Double>(Collections.nCopies(data_lenght, 0d)));
+
         fftdata = new fft(data_lenght);
         maxFrequency = new double[3][2];
         switchConfiguration = new boolean[10];
@@ -138,17 +153,29 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         step_time = act_timestamp - last_timestamp;
         data_counter +=1;
         shiftRight(data_sensor_array,step_time);
-        data_sensor_array[3][0] = step_time;
+        //data_sensor_array[3][0] = step_time;
+        data_sensor_array.get(3).set(0,(double)step_time) ;
         last_timestamp = act_timestamp;
 
         if (ready){
-            data_sensor_array[0][0] = Xfilterdata.filterData(actSensorValues[0]);
-            data_sensor_array[1][0] = Yfilterdata.filterData(actSensorValues[1]);
-            data_sensor_array[2][0] = Zfilterdata.filterData(actSensorValues[2]);
+            //data_sensor_array[0][0] = Xfilterdata.filterData(actSensorValues[0]);
+            //data_sensor_array[1][0] = Yfilterdata.filterData(actSensorValues[1]);
+            //data_sensor_array[2][0] = Zfilterdata.filterData(actSensorValues[2]);
+
+            data_sensor_array.get(0).set(0,Xfilterdata.filterData(actSensorValues[0]));
+            data_sensor_array.get(1).set(0,Yfilterdata.filterData(actSensorValues[1]));
+            data_sensor_array.get(2).set(0,Zfilterdata.filterData(actSensorValues[2]));
+
+            //var = Math.sqrt(
+            //        Math.pow(data_sensor_array[0][0], 2) +
+            //        Math.pow(data_sensor_array[1][0], 2) +
+            //        Math.pow(data_sensor_array[2][0], 2));
+
             var = Math.sqrt(
-                            Math.pow(data_sensor_array[0][0], 2) +
-                            Math.pow(data_sensor_array[1][0], 2) +
-                            Math.pow(data_sensor_array[2][0], 2));
+                   Math.pow(data_sensor_array.get(0).get(0), 2) +
+                   Math.pow(data_sensor_array.get(1).get(0), 2) +
+                   Math.pow(data_sensor_array.get(2).get(0), 2));
+
 
             if (analyseData){ // trying to  analyse the absolute value of the vibration from x,y and z
                 dataAnalyseVar.addData(var,step_time); // asume that we analyse the first vibration data
@@ -161,9 +188,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         }
         else {
-            data_sensor_array[0][0] =event.values[0];
-            data_sensor_array[1][0] =event.values[1];
-            data_sensor_array[2][0] =event.values[2];
+            //data_sensor_array[0][0] =event.values[0];
+            //data_sensor_array[1][0] =event.values[1];
+            //data_sensor_array[2][0] =event.values[2];
+            data_sensor_array.get(0).set(0,(double)event.values[0]);
+            data_sensor_array.get(1).set(0,(double)event.values[1]);
+            data_sensor_array.get(2).set(0,(double)event.values[2]);
+
                 if(counter > data_lenght *1.2){
                     if(!filterStatus){
                         Xfilterdata = new filter(filterOrder, samplingFrequency,cutOffFrequency*samplingFrequency);
@@ -266,6 +297,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 case "INFLUENCE" :
                     influenceSetting((double)data.getValue());
                     break;
+                case "RESOLUTION" :
+                    bufferSetting((int)data.getValue());
+                    break;
                 default:
                     break;
             }
@@ -317,7 +351,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             case "NOISE":
                 Value = noiseCoefficientConfiguration;
                 break;
-
+            case "RESOLUTION":
+                Value = (int)((Math.log(analyseBuffer/2048)/Math.log(2)));
+                break;
             case "LAG":
                 Value = lag;
                 break;
@@ -454,36 +490,54 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         data_output1_params.width = width;
         data_output1.setLayoutParams(data_output1_params);
 }
-    public double[] toAc(@NonNull double[] data){
-        double[] temp = data.clone();
+    public double[] toAc(@NonNull List<Double> data){
+        double[] temp = new double[data.size()];
+        for (int i = 0; i < data.size(); i++) {
+            temp[i] = data.get(i); // Extracting the double value
+        }
         double val = 0;
         for (double datum : data) val = val + datum;
-        val = val/(data.length);
-        for (int i = 0;i<data.length;i++) {
-            temp[i] = data[i] - val;
+        val = val/(data.size());
+        for (int i = 0;i<data.size();i++) {
+            temp[i] = data.get(i) - val;
         }
         return temp;
     }
-    public double[] getMax(@NonNull double[] data){
+    //public double[] getMax(@NonNull double[] data){
+    public double[] getMax(@NonNull List<Double> data){
+
         double max =-1.0E100;
         int pos = 0;
-            for(int i = 0; i <data.length/2;i++){
-                   if(max < data[i]){
-                       max = data[i];
+            for(int i = 0; i <data.size()/2;i++){
+                   if( max < data.get(i)){
+                       max = data.get(i);
                        pos = i;
                    }
             }
-        return new double[]{max,data_fft_array[3][pos]};
+        //return new double[]{max,data_fft_array[3][pos]};
+        return new double[]{max,data_fft_array.get(3).get(pos)};
     }
-    private void shiftRight(@NonNull double[][] array, double timestamp){
+    //private void shiftRight(@NonNull double[][] array, double timestamp){
+    private void shiftRight(@NonNull List<List<Double>> array, double timestamp){
         for (int i = data_lenght - 1; i > 0; i--){
-            array[0][i] = array[0][i-1];
-            array[1][i] = array[1][i-1];
-            array[2][i] = array[2][i-1];
-            array[3][i] = array[3][i-1] + timestamp;
+            //array[0][i] = array[0][i-1];
+            //array[1][i] = array[1][i-1];
+            //array[2][i] = array[2][i-1];
+            //array[3][i] = array[3][i-1] + timestamp;
+
+            array.get(0).set(i,array.get(0).get(i-1));
+            array.get(1).set(i,array.get(1).get(i-1));
+            array.get(2).set(i,array.get(2).get(i-1));
+            array.get(3).set(i,array.get(3).get(i-1) + timestamp);
+
         }
-        array[3][0] = 0;
-        samplingFrequency = 1000* data_lenght /data_sensor_array[3][data_lenght -1];
+        //array[3][0] = 0;
+        array.get(0).set(0,0.0);
+        //samplingFrequency = 1000* data_lenght /data_sensor_array[3][data_lenght -1];
+        samplingFrequency = 1000* data_lenght /data_sensor_array.get(3).get(data_lenght-1);
+    }
+    private void bufferSetting(int bufferValue){
+        analyseBuffer = (int) (Math.pow(2,bufferValue)*2048);
     }
 
     private void switchSetting(boolean[] switchData){
@@ -520,22 +574,44 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private final Runnable  getfftAbs = new Runnable() {
         @Override
         public void run() {
+
             double resolution = samplingFrequency / data_lenght;
+            List<Double> freq = (new ArrayList<Double>(Collections.nCopies(data_lenght, 0d)));;
+            data_fft_array.clear();
             for (int i = 0; i< data_lenght; i++){
                 //data_fft_array[3][i+1] = data_sensor_array[3][i+1];
-                data_fft_array[3][i] = resolution*i;
+                //data_fft_array[3][i] = resolution*i;
+                freq.set(i,resolution*i);
             }
             //data_fft_array[3][0] = 0;
-            data_fft_array[0] = fftdata.getLogtfft(toAc(data_sensor_array[0]));
-            data_fft_array[1] = fftdata.getLogtfft(toAc(data_sensor_array[1]));
-            data_fft_array[2] = fftdata.getLogtfft(toAc(data_sensor_array[2]));
+            //data_fft_array[0] = fftdata.getLogtfft(toAc(data_sensor_array[0]));
+            //data_fft_array[1] = fftdata.getLogtfft(toAc(data_sensor_array[1]));
+            //data_fft_array[2] = fftdata.getLogtfft(toAc(data_sensor_array[2]));
+
+            List<Double> fftList0 = new ArrayList<>();
+            List<Double> fftList1 = new ArrayList<>();
+            List<Double> fftList2 = new ArrayList<>();
+            for (double data:fftdata.getLogtfft(toAc(data_sensor_array.get(0))))
+                fftList0.add(data);
+            data_fft_array.add(fftList0);
+            for (double data:fftdata.getLogtfft(toAc(data_sensor_array.get(1))))
+                fftList1.add(data);
+            data_fft_array.add(fftList1);
+            for (double data:fftdata.getLogtfft(toAc(data_sensor_array.get(2))))
+                fftList2.add(data);
+            data_fft_array.add(fftList2);
+            data_fft_array.add(freq);
 
             if (trackVelocity){
-                velocityTracking.addDataTrack(data_fft_array[0],data_fft_array[1],data_fft_array[2],samplingFrequency);
+                //velocityTracking.addDataTrack(data_fft_array[0],data_fft_array[1],data_fft_array[2],samplingFrequency);
+                velocityTracking.addDataTrack(data_fft_array,samplingFrequency);
             }
-            maxFrequency[0] = getMax(data_fft_array[0]);
-            maxFrequency[1] = getMax(data_fft_array[1]);
-            maxFrequency[2] = getMax(data_fft_array[2]);
+            //maxFrequency[0] = getMax(data_fft_array[0]);
+            //maxFrequency[1] = getMax(data_fft_array[1]);
+            //maxFrequency[2] = getMax(data_fft_array[2]);
+            maxFrequency[0] = getMax(data_fft_array.get(0));
+            maxFrequency[1] = getMax(data_fft_array.get(1));
+            maxFrequency[2] = getMax(data_fft_array.get(2));
 
         }
     };
@@ -551,15 +627,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             // Remplissez les listes de points à partir de vos tableaux de données
             for (int i = 0; i < data_lenght /2; i++) {
-                xPoints.add(new DataPoint(data_fft_array[3][i], data_sensor_array[0][i*2]));
-                yPoints.add(new DataPoint(data_fft_array[3][i], data_sensor_array[1][i*2]));
-                zPoints.add(new DataPoint(data_fft_array[3][i], data_sensor_array[2][i*2]));
+                //xPoints.add(new DataPoint(data_fft_array[3][i], data_sensor_array[0][i*2]));
+                //yPoints.add(new DataPoint(data_fft_array[3][i], data_sensor_array[1][i*2]));
+                //zPoints.add(new DataPoint(data_fft_array[3][i], data_sensor_array[2][i*2]));
+
+                xPoints.add(new DataPoint(data_fft_array.get(3).get(i), data_sensor_array.get(0).get(i*2)));
+                yPoints.add(new DataPoint(data_fft_array.get(3).get(i), data_sensor_array.get(1).get(i*2)));
+                zPoints.add(new DataPoint(data_fft_array.get(3).get(i), data_sensor_array.get(2).get(i*2)));
 
             }
             for (int i = 0; i < data_lenght / 2; i++) {
-                xFftPoints.add(new DataPoint(data_fft_array[3][i], data_fft_array[0][i]));
-                yFftPoints.add(new DataPoint(data_fft_array[3][i], data_fft_array[1][i]));
-                zFftPoints.add(new DataPoint(data_fft_array[3][i], data_fft_array[2][i]));
+                //xFftPoints.add(new DataPoint(data_fft_array[3][i], data_fft_array[0][i]));
+                //yFftPoints.add(new DataPoint(data_fft_array[3][i], data_fft_array[1][i]));
+                //zFftPoints.add(new DataPoint(data_fft_array[3][i], data_fft_array[2][i]));
+                xFftPoints.add(new DataPoint(data_fft_array.get(3).get(i), data_fft_array.get(0).get(i)));
+                yFftPoints.add(new DataPoint(data_fft_array.get(3).get(i), data_fft_array.get(1).get(i)));
+                zFftPoints.add(new DataPoint(data_fft_array.get(3).get(i), data_fft_array.get(2).get(i)));
             }
 
             LineGraphSeries<DataPoint> xSeries = new LineGraphSeries<>(xPoints.toArray(new DataPoint[0]));
@@ -597,9 +680,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public final Runnable print_data = new Runnable() {
         @Override
         public void run() {
-            OutputX.setText(String.valueOf(data_sensor_array[0][0]));
-            OutputY.setText(String.valueOf(data_sensor_array[1][0]));
-            OutputZ.setText(String.valueOf(data_sensor_array[2][0]));
+            //OutputX.setText(String.valueOf(data_sensor_array[0][0]));
+            //OutputY.setText(String.valueOf(data_sensor_array[1][0]));
+            //OutputZ.setText(String.valueOf(data_sensor_array[2][0]));
+           OutputX.setText(String.valueOf(data_sensor_array.get(0).get(0)));
+           OutputY.setText(String.valueOf(data_sensor_array.get(1).get(0)));
+           OutputZ.setText(String.valueOf(data_sensor_array.get(2).get(0)));
             data_output_label.setText("");
             data_output_label.append(
                     "X : f : " + maxFrequency[0][1] + "Hz, v : " + maxFrequency[0][0] + "dB" + "\n" +
@@ -691,6 +777,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         influence = (double)(float)entry.getValue();
                         break;
 
+                    case "resolution":
+                        analyseBuffer = (int)entry.getValue();
+                        break;
+
                     case "SW1":
                         switchConfiguration[0]= (boolean)entry.getValue();
                         break;
@@ -717,6 +807,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
     private void sendDataPreferences(){
+
+
         preferences.writePreferences(getApplicationContext(),"rpmConfiguration",rpmConfiguration);
         preferences.writePreferences(getApplicationContext(),"powerConfiguration",powerConfiguration);
         preferences.writePreferences(getApplicationContext(),"bearingConfiguration",bearingConfiguration);
@@ -726,6 +818,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         preferences.writePreferences(getApplicationContext(),"lag",lag);
         preferences.writePreferences(getApplicationContext(),"threshold",threshold);
         preferences.writePreferences(getApplicationContext(),"influence",influence);
+
+        preferences.writePreferences(getApplicationContext(),"resolution",analyseBuffer);
 
         preferences.writePreferences(getApplicationContext(),"SW1",switchConfiguration[0]);
         preferences.writePreferences(getApplicationContext(),"SW2",switchConfiguration[1]);
