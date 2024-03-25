@@ -49,8 +49,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     LinearLayout command_layout_set_params;
     SensorManager sensorManager;
     Sensor OutputSensor;
-    private final int data_lenght = 2048*2; // min 256
-    private final int print_scale = 256;
+    private int data_lenght = 512; // min 256
+    private final int print_scale = 64;
     //private volatile double[][] data_sensor_array;
     private volatile List<List<Double>> data_sensor_array;
     //private volatile  double[][] data_fft_array;
@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private int  lag = 32;
     private double  threshold= 8.0;
     private double  influence= 0.9;
-    int analyseBuffer = 2048*2;
+    int analyseBuffer = 2048;
     private double samplingFrequency;
     private double[][] maxFrequency;
     private filter Xfilterdata;
@@ -109,21 +109,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //output_content = findViewById(R.id.output_content);
         output_label = findViewById(R.id.output_label);
         analyse_result = findViewById(R.id.analyse_result);
-
-        //data_sensor_array = new double[4][data_lenght];
-        data_sensor_array = new ArrayList<>();
-        data_sensor_array.add(new ArrayList<Double>(Collections.nCopies(data_lenght, 0d)));
-        data_sensor_array.add(new ArrayList<Double>(Collections.nCopies(data_lenght, 0d)));
-        data_sensor_array.add(new ArrayList<Double>(Collections.nCopies(data_lenght, 0d)));
-        data_sensor_array.add(new ArrayList<Double>(Collections.nCopies(data_lenght, 0d)));
-
-        //data_fft_array = new double[4][data_lenght];
-        data_fft_array = new ArrayList<>();
-        data_fft_array.add(new ArrayList<Double>(Collections.nCopies(data_lenght, 0d)));
-        data_fft_array.add(new ArrayList<Double>(Collections.nCopies(data_lenght, 0d)));
-        data_fft_array.add(new ArrayList<Double>(Collections.nCopies(data_lenght, 0d)));
-        data_fft_array.add(new ArrayList<Double>(Collections.nCopies(data_lenght, 0d)));
-
         fftdata = new fft(data_lenght);
         maxFrequency = new double[3][2];
         switchConfiguration = new boolean[10];
@@ -139,6 +124,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorManager.registerListener(this, OutputSensor, SensorManager.SENSOR_DELAY_FASTEST);
 
         parseDataPreferences(preferences.readPreferences(getApplicationContext()));
+        initList(data_lenght);
         setupView();
         setupButton();
         setConfiguration();
@@ -228,7 +214,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     counter++;
                 }
         }
-        if(data_counter > data_lenght /print_scale) {
+        if(data_counter > print_scale) {
             if (flag && ready) {
                 dofftHandler.post(getfftAbs);
                 //doplotHandler.post(data_plot);   //doplotHandler in other way
@@ -307,6 +293,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 dataAnalyseVar.setConfig(data.getId(),data.getValue());
             }
         }
+            initList(data_lenght);
             sendDataPreferences();
             Toast.makeText(getApplicationContext(),"Configuration Saved", Toast.LENGTH_SHORT).show();
     }
@@ -352,7 +339,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 Value = noiseCoefficientConfiguration;
                 break;
             case "RESOLUTION":
-                Value = (int)((Math.log(analyseBuffer/2048)/Math.log(2)));
+                Value = (int)((Math.log(data_lenght/512)/Math.log(2)));
                 break;
             case "LAG":
                 Value = lag;
@@ -409,6 +396,29 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             }
         });
+    }
+    private void initList(int lenght){
+        data_lenght = lenght;
+        try {
+            data_sensor_array.clear();
+            data_fft_array.clear();
+        }catch (Exception e){}
+        //data_sensor_array = new double[4][data_lenght];
+        data_sensor_array = new ArrayList<>();
+        data_sensor_array.add(new ArrayList<Double>(Collections.nCopies(data_lenght, 0d)));
+        data_sensor_array.add(new ArrayList<Double>(Collections.nCopies(data_lenght, 0d)));
+        data_sensor_array.add(new ArrayList<Double>(Collections.nCopies(data_lenght, 0d)));
+        data_sensor_array.add(new ArrayList<Double>(Collections.nCopies(data_lenght, 0d)));
+
+
+        //data_fft_array = new double[4][data_lenght];
+        data_fft_array = new ArrayList<>();
+        data_fft_array.add(new ArrayList<Double>(Collections.nCopies(data_lenght, 0d)));
+        data_fft_array.add(new ArrayList<Double>(Collections.nCopies(data_lenght, 0d)));
+        data_fft_array.add(new ArrayList<Double>(Collections.nCopies(data_lenght, 0d)));
+        data_fft_array.add(new ArrayList<Double>(Collections.nCopies(data_lenght, 0d)));
+
+        fftdata.chancheResolution(data_lenght);
     }
     private void setupView(){
 
@@ -520,11 +530,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     //private void shiftRight(@NonNull double[][] array, double timestamp){
     private void shiftRight(@NonNull List<List<Double>> array, double timestamp){
         for (int i = data_lenght - 1; i > 0; i--){
-            //array[0][i] = array[0][i-1];
-            //array[1][i] = array[1][i-1];
-            //array[2][i] = array[2][i-1];
-            //array[3][i] = array[3][i-1] + timestamp;
-
             array.get(0).set(i,array.get(0).get(i-1));
             array.get(1).set(i,array.get(1).get(i-1));
             array.get(2).set(i,array.get(2).get(i-1));
@@ -537,7 +542,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         samplingFrequency = 1000* data_lenght /data_sensor_array.get(3).get(data_lenght-1);
     }
     private void bufferSetting(int bufferValue){
-        analyseBuffer = (int) (Math.pow(2,bufferValue)*2048);
+        analyseBuffer = (int) (Math.pow(2,bufferValue+3)*512);
+        data_lenght = (int) (Math.pow(2,bufferValue)*512);
     }
 
     private void switchSetting(boolean[] switchData){
@@ -732,7 +738,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         analyse_result.append("The result is : \n" + "Number Of Pics : " + cnt +"\n");
         for (data resultdata:result){
             //String truncatedValue = String.valueOf(resultdata.getValue()).substring(0, Math.min(String.valueOf(resultdata.getValue()).length(), 8));
-            analyse_result.append(resultdata.getId() +  resultdata.getValue() + "% \n");
+            analyse_result.append(resultdata.getId() +  resultdata.getValue() + "\n");
             button_param.setText("RE-DO - ANALYSE");
         }
     }
@@ -780,6 +786,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     case "resolution":
                         analyseBuffer = (int)entry.getValue();
                         break;
+                    case "resolutionbase":
+                        data_lenght = (int)entry.getValue();
+                        break;
 
                     case "SW1":
                         switchConfiguration[0]= (boolean)entry.getValue();
@@ -820,6 +829,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         preferences.writePreferences(getApplicationContext(),"influence",influence);
 
         preferences.writePreferences(getApplicationContext(),"resolution",analyseBuffer);
+        preferences.writePreferences(getApplicationContext(),"resolutionbase",data_lenght);
 
         preferences.writePreferences(getApplicationContext(),"SW1",switchConfiguration[0]);
         preferences.writePreferences(getApplicationContext(),"SW2",switchConfiguration[1]);

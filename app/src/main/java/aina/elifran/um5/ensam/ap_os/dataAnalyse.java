@@ -93,7 +93,7 @@ public class dataAnalyse {
         switch (Config) {
             case "RESOLUTION":
                 //counter = 0;
-                data_buffer = (int) (Math.pow(2,(int)Value)*2048);
+                data_buffer = (int) (Math.pow(2,(int)Value+3)*512);
                 dataAnalyseFft.chancheResolution(data_buffer);
                 changeResolution(data_buffer);
                 break;
@@ -204,11 +204,14 @@ public class dataAnalyse {
 
             analyseResultData.clear();
             String ID;
-            ID = " Number of pick frequency fond : \n";
+            ID = " Number of pick frequency ML fond : \n";
             for (DataPoint dataIn: dataFrequencyMultiple){
-                 ID += String.valueOf(dataIn.getY())+ " | @ " + String.valueOf(dataIn.getX()) + "\n";
+                ID += " | @ " + String.valueOf(dataIn.getX()) + String.valueOf(dataIn.getY())+ "\n";
             }
             analyseResultData.add(new data(ID, dataFrequencyMultiple.size()));
+
+            ID = "Resolution Level : ";
+            analyseResultData.add(new data(ID,(int)Math.log(data_buffer/512)/Math.log(2)-3));
 
             /*______________________________________________ static default _________________________________________*/
             if (switchConfiguration[0]) {     // static vibration unbalanced
