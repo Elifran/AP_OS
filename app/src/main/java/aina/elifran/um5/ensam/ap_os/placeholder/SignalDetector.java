@@ -17,7 +17,7 @@ public class SignalDetector {
         // the results (peaks, 1 or -1) of our algorithm
         List<Integer> signals = new ArrayList<Integer>(Collections.nCopies(data.size(), 0));
 
-        // filter out the signals (peaks) from our original list (using influence arg)
+        // filterLP out the signals (peaks) from our original list (using influence arg)
         List<Double> filteredData = new ArrayList<Double>(data);
 
         // the current average of the rolling window
@@ -46,7 +46,7 @@ public class SignalDetector {
                 } else {
                     signals.set(i, -1);
                 }
-                // filter this signal out using influence
+                // filterLP this signal out using influence
                 filteredData.set(i, (influence * data.get(i)) + ((1 - influence) * filteredData.get(i - 1)));
             } else {
                 // ensure this signal remains a zero

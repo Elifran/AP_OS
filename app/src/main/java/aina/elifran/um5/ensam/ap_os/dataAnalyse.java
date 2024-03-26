@@ -3,7 +3,6 @@ package aina.elifran.um5.ensam.ap_os;
 import android.os.Looper;
 import android.os.Handler;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -25,16 +24,18 @@ public class dataAnalyse {
     private double noiseCoefficientConfiguration; // frequency outside the noise
     private final double coeffValue = 1; // frequency pic identification
     private final double frequencyShift = 2.0E-1;
+    private final int filterOrder = 50;
     private int lag;
     private Double threshold;
     private Double influence;
-    private static int bearingConfiguration;
-    private boolean[] switchConfiguration;
+    private  int bearingConfiguration_ballsNumber;
+    private  double bearingConfiguration_PitchiDameter = 25;
+    private  double bearingConfiguration_ballsDiameter = 2.5;
+    private  double bearingConfiguration_BetaAngle = Math.PI/4;
 
+    private boolean[] switchConfiguration;
     private List<Double> dataFftArray;
-    //private double[] dataMesureArray;
-    private List<Double> dataMesureArray;
-    //private long[] dataTimeArray;
+    private List<Double> dataMeasureArray;
     private List<Integer> dataTimeArray;
     private List<DataPoint> dataFrequencysignificantArray;
     private int data_buffer;
@@ -50,6 +51,9 @@ public class dataAnalyse {
                 double rpm_Configuration,
                 double power_Configuration,
                 int bearing_Configuration,
+                double bearing_BallDiamConfiguration,
+                double bearing_PitchConfiguration,
+                double bearing_AngleConfiguration,
                 boolean[] switch_Configuration,
                 double noise_Coefficient_Configuration,
                 double power_Coefficient_Configuration,
@@ -61,8 +65,11 @@ public class dataAnalyse {
         data_buffer = buffer;
         samplingFrequency = sampling_frequency;
         rpmConfiguration = rpm_Configuration;
+        bearingConfiguration_ballsDiameter = bearing_BallDiamConfiguration;
+        bearingConfiguration_PitchiDameter = bearing_PitchConfiguration;
+        bearingConfiguration_BetaAngle = bearing_AngleConfiguration;
         powerConfiguration = power_Configuration;
-        bearingConfiguration = bearing_Configuration;
+        bearingConfiguration_ballsNumber = bearing_Configuration;
         switchConfiguration = switch_Configuration.clone();
         noiseCoefficientConfiguration = noise_Coefficient_Configuration;
         powerCoefficientConfiguration  = power_Coefficient_Configuration;
@@ -72,19 +79,19 @@ public class dataAnalyse {
         this.influence = influence;
 
         // initialize all array :
-        //dataMesureArray = new double[data_buffer];
+        //dataMeasureArray = new double[data_buffer];
         changeResolution(buffer);
         //dataTimeArray = new long[data_buffer];
         dataAnalyseFft = new fft(data_buffer);
         analyseHandler = new Handler(Objects.requireNonNull(Looper.myLooper()));
     }
-    private void changeResolution(int lengh){
-        data_buffer = lengh;
-        try {dataMesureArray.clear();} catch (Exception e){}
-        try {dataFftArray.clear();}catch (Exception e){}
-        try {dataTimeArray.clear();}catch (Exception e){}
+    private void changeResolution(int length){
+        data_buffer = length;
+        try {dataMeasureArray.clear();} catch (Exception ignored){}
+        try {dataFftArray.clear();}catch (Exception ignored){}
+        try {dataTimeArray.clear();}catch (Exception ignored){}
 
-        dataMesureArray = new ArrayList<>(Collections.nCopies(data_buffer, 0.0d));
+        dataMeasureArray = new ArrayList<>(Collections.nCopies(data_buffer, 0.0d));
         dataFftArray = new ArrayList<>(Collections.nCopies(data_buffer/2, 0.0d));
         dataTimeArray = new ArrayList<>(Collections.nCopies(data_buffer, 0));
     }
@@ -114,7 +121,16 @@ public class dataAnalyse {
                 powerConfiguration = (double) Value;
                 break;
             case "BEARING":
-                bearingConfiguration = (int) Value;
+                bearingConfiguration_ballsNumber = (int) Value;
+                break;
+            case "BEARING PITCH" :
+                bearingConfiguration_PitchiDameter = (double) Value;
+                break;
+            case "BEARING BALL DIAM" :
+                bearingConfiguration_ballsDiameter = (double) Value;
+                break;
+            case "BEARING ANGLE" :
+                bearingConfiguration_BetaAngle = (double) Value;
                 break;
             case "SWITCH":
                 switchConfiguration = (boolean[]) Value;
@@ -151,7 +167,7 @@ public class dataAnalyse {
 
     /*----------------------------------------------------------------------------- adding data -----------------------------------------------------------------------*/
     public void addData(double data, long timeStamp) { // insert data to the buffer befor analyse
-        shiftRight(dataMesureArray, dataTimeArray, data, timeStamp);
+        shiftRight(dataMeasureArray, dataTimeArray, data, timeStamp);
         counter++;      // counte any data
         if (counter == (int) (data_buffer + data_buffer * 0.1))
             listener.analysePossible();
@@ -185,9 +201,9 @@ public class dataAnalyse {
         @Override
         public void run() {
 
-            dataFftArray = cloneTrounce(dataAnalyseFft.getAbsFft(toAc(dataMesureArray)),0.5); // get the absolute value of the fft
+            dataFftArray = cloneTrounce(dataAnalyseFft.getAbsFft(toAc(dataMeasureArray)),0.5); // get the absolute value of the fft
             HashMap<String, List> signalResultAnalyse = SignalDetector.analyzeDataForSignals(dataFftArray,lag,threshold,influence);
-            dataFrequencysignificantArray =  getPeakPos(signalResultAnalyse.get("signals"));
+            dataFrequencysignificantArray =  getPeakPos(Objects.requireNonNull(signalResultAnalyse.get("signals")));
 
     // log the result
             for (Map.Entry<String, List> entry : signalResultAnalyse.entrySet()) {
@@ -196,11 +212,7 @@ public class dataAnalyse {
                 String listAsString = value.toString();
                 Log.d("HashMapContent", key + ": " + listAsString);
             }
-
             List<DataPoint> dataFrequencyMultiple = dataFrequencyMultiple(dataFrequencysignificantArray, rpmConfiguration /60.0,frequencyShift);
-            List<DataPoint> dataFrequencyMultipleByHalf = dataFrequencyMultiple(dataFrequencysignificantArray, rpmConfiguration / (2*60.0),frequencyShift);
-            List<DataPoint> dataFrequencyMultipleByBearing = dataFrequencyMultiple(dataFrequencysignificantArray, rpmConfiguration * bearingConfiguration / 60.0,frequencyShift);
-            List<DataPoint> dataFrequencyMultipleByFREQ = dataFrequencyMultiple(dataFrequencysignificantArray, 50.0,frequencyShift);
 
             analyseResultData.clear();
             String ID;
@@ -209,59 +221,33 @@ public class dataAnalyse {
                 ID += " | @ " + String.valueOf(dataIn.getX()) + String.valueOf(dataIn.getY())+ "\n";
             }
             analyseResultData.add(new data(ID, dataFrequencyMultiple.size()));
-
             ID = "Resolution Level : ";
-            analyseResultData.add(new data(ID,(int)(Math.log(data_buffer/512)/Math.log(2)-3)));
-
+            analyseResultData.add(new data(ID,(int)(Math.log((double) data_buffer /512)/Math.log(2)-3)));
             /*______________________________________________ static default _________________________________________*/
             if (switchConfiguration[0]) {     // static vibration unbalanced
-                double freqCentred = rpmConfiguration/60.0;
-                DataPoint data1 = getMaxAnalyse(dataFrequencyMultiple, freqCentred - frequencyShift, freqCentred + frequencyShift);
-                analyseResultData.add(new data("Static Vibration State ----> @ " + data1.getX() + ": ", data1.getY()));//Math.pow(10, data1[0]/20) * powerCoefficientConfiguration / powerConfiguration));
+                analyseResultData.add(staticVibration(dataFrequencysignificantArray));
             }
             /*_____________________________________________ dynamic default _________________________________________*/
             if (switchConfiguration[1]) {     //dynamic vibration unbalanced
-                double freqCentred = rpmConfiguration * 2.0/60.0;
-                DataPoint data1 = getMaxAnalyse(dataFrequencyMultiple, freqCentred - frequencyShift, freqCentred + frequencyShift);
-                analyseResultData.add(new data("Dynamic Vibration State ---> @ " + data1.getX() + ": ", data1.getY()));//Math.pow(10, data1[0]/20) * powerCoefficientConfiguration / powerConfiguration));
-            }
+                analyseResultData.add(dynamicVibration(dataFrequencysignificantArray));
+           }
             /*______________________________________________ magnet default _________________________________________*/
             if (switchConfiguration[4]) {     //electrical or mechanical default
-                double freqCentred =  50.0;
-                DataPoint data1 = getMaxAnalyse(dataFrequencyMultipleByFREQ, freqCentred - frequencyShift, freqCentred + frequencyShift);
-                analyseResultData.add(new data("Bobine State --------------> @ " + data1.getX() + ": ", data1.getY()));//'Math.pow(10, data1[0]/20) * powerCoefficientConfiguration / powerConfiguration));
+                analyseResultData.add(electricalVibration(dataFrequencysignificantArray));
             }
             /*__________________________________________ mechanical  looseness ______________________________________*/
             if (switchConfiguration[2]) {     //mechanical looseness : presented by harmonic 0.5 of the main freuqency
-                double Temp = 0.0;
-                for (DataPoint data : dataFrequencyMultipleByHalf){
-                    Temp += data.getY();
-                }
-                Temp /= dataFrequencyMultipleByHalf.isEmpty() ? 1 : dataFrequencyMultipleByHalf.size();
-                analyseResultData.add(new data("Looseness default State -----> ", Temp * powerCoefficientConfiguration / powerConfiguration));
+                analyseResultData.add(loosenessVibration(dataFrequencysignificantArray));
             }
             /*______________________________________________ bearing default _________________________________________*/
             if (switchConfiguration[3]) {     //bearing fault
-                double Temp = 0.0;
-
-                for (DataPoint data : dataFrequencyMultipleByBearing){
-                    Temp += data.getY();
-                }
-                Temp /= dataFrequencyMultipleByBearing.isEmpty() ? 1 : dataFrequencyMultipleByBearing.size();
-                analyseResultData.add(new data("Bearing default State -----> ", Temp * powerCoefficientConfiguration / powerConfiguration));
+                analyseResultData.add(bearingVibration(dataFrequencysignificantArray, dataMeasureArray));
             }
 
             /*______________________________________________ cushions default _________________________________________*/
             if (switchConfiguration[5]) {     //cushions  default
-                double Temp = 0.0;
-                for (DataPoint data : dataFrequencyMultiple){
-                    Temp += data.getY();
-                }
-                Temp /= dataFrequencyMultiple.isEmpty() ? 1 : dataFrequencyMultiple.size();
-                analyseResultData.add(new data("Cushions State -------------> ", Temp * powerCoefficientConfiguration / powerConfiguration));
+                analyseResultData.add(cushionsVibration(dataFrequencysignificantArray));
             }
-
-
             /*----------------------------------------------------------**------------------------------------------------------------*/
             isDone(analyseResultData,signalResultAnalyse);     // send to the interface that the analyse is done
             analyseStatus = false;                    // analyse done
@@ -270,16 +256,99 @@ public class dataAnalyse {
         }
     };
 
+    // analyse Function : --------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    private data staticVibration(List<DataPoint> postResult){
+        double freqCentred = rpmConfiguration/60.0;
+        DataPoint data1 = getMaxAnalyse(postResult, freqCentred - frequencyShift, freqCentred + frequencyShift);
+        return new data("Static Vibration State ----> @ " + data1.getX() + ": ", data1.getY());
+
+    }
+    private data dynamicVibration(List<DataPoint> postResult){
+        double freqCentred = rpmConfiguration * 2.0/60.0;
+        DataPoint data1 = getMaxAnalyse(postResult, freqCentred - frequencyShift, freqCentred + frequencyShift);
+        return new data("Dynamic Vibration State ---> @ " + data1.getX() + ": ", data1.getY());
+
+    }
+    private data electricalVibration(List<DataPoint> postResult){
+        double freqCentred =  50.0;
+        DataPoint data1 = getMaxAnalyse(postResult, freqCentred - frequencyShift, freqCentred + frequencyShift);
+        return new data("Bobine State --------------> @ " + data1.getX() + ": ", data1.getY());
+
+    }
+    private data cushionsVibration(List<DataPoint> postResult){  //
+        List<DataPoint> cushionsAccumulo = new ArrayList<>();
+        double Temp = 0.0;
+        double rotorSpeed = rpmConfiguration/60.0;
+        for (int i = 1; i<postResult.size();i++) {
+            cushionsAccumulo.add(getMaxAnalyse(postResult, (rotorSpeed * i - frequencyShift), (rotorSpeed * i + frequencyShift)));
+            Temp += cushionsAccumulo.get(i).getY();
+        }
+        Temp /= cushionsAccumulo.isEmpty() ? 1 : postResult.size();
+
+        return new data("Cushions default State -----> ", Temp * powerCoefficientConfiguration / powerConfiguration);
+    }
+    private data bearingVibration(List<DataPoint> postResult, List<Double> dataMeasure){
+        double rotorSpeed = rpmConfiguration/60.0;
+        boolean bearingFaultStatus = false;
+        double freqInterval = 10;
+        double Bd_Pd_Beta = Math.cos(bearingConfiguration_BetaAngle) * bearingConfiguration_ballsDiameter / bearingConfiguration_PitchiDameter;
+        double Pd_Bd = bearingConfiguration_PitchiDameter / bearingConfiguration_ballsDiameter;
+
+        double FTF = 0.5 * rotorSpeed * (1 - Pd_Bd);
+        double BSF = 0.5 * rotorSpeed * Pd_Bd * (1 - Math.pow(Bd_Pd_Beta, 2));
+        double BFPO = 0.5  * rotorSpeed * bearingConfiguration_ballsNumber * (1 - Bd_Pd_Beta);
+        double BPFI = 0.5 * rotorSpeed * bearingConfiguration_ballsNumber * (1 + Bd_Pd_Beta);
+
+        List<DataPoint> bearingTest = new ArrayList<>();
+        List<Double> dataMesureFiltred = new ArrayList<>();
+
+        filter dataMeasureCut = new filter(filterOrder,samplingFrequency,BFPO-freqInterval,BFPO+freqInterval);
+        for (Double data : dataMeasure)
+            dataMesureFiltred.add(dataMeasureCut.filterData(data));
+        for (int i = 1; i<postResult.size();i++)
+            bearingTest.add(getMaxAnalyse(postResult,(BFPO*i-frequencyShift),(BFPO*i +frequencyShift)));
+        for (int i = 1; i<postResult.size();i++)
+            bearingTest.add(getMaxAnalyse(postResult,(BSF*i-frequencyShift),(BSF*i +frequencyShift)));
+        for (int i = 1; i<postResult.size();i++)
+            bearingTest.add(getMaxAnalyse(postResult,(BPFI*i-frequencyShift),(BPFI*i +frequencyShift)));
+        if (!bearingTest.isEmpty())
+            bearingFaultStatus = true;
+        return new data(
+                "Bearing fault state1 : " +
+                FTF + " | " + BSF +" | " + BFPO + " | " + BPFI + "||" + bearingTest.size() +
+                "-----> ", bearingFaultStatus);
+
+    }
+    private data loosenessVibration(List<DataPoint> postResult){
+        List<DataPoint> loosenessAccumulo = new ArrayList<>();
+        double Temp = 0.0;
+        double rotorSpeed = rpmConfiguration / 60.0;
+        for (int i = 1; i<postResult.size();i++) {  // internal loosness 1/2,1/3,1.5
+            loosenessAccumulo.add(getMaxAnalyse(postResult, (rotorSpeed * i*1/3 - frequencyShift), (rotorSpeed * i*1/3 + frequencyShift)));
+            Temp += loosenessAccumulo.get(i-1).getY();
+        }
+        for (int i = 0; i<postResult.size();i++) {  // internal loosness 1/2,1/3,1.5
+            loosenessAccumulo.add(getMaxAnalyse(postResult, (rotorSpeed * (i + 1/2) - frequencyShift), (rotorSpeed * (i + 1/2)+ frequencyShift)));
+            Temp += loosenessAccumulo.get(i).getY();
+        }
+        for (int i = 1; i<postResult.size();i++) {  // internal loosness 1/2,1/3,1.5
+            loosenessAccumulo.add(getMaxAnalyse(postResult, (rotorSpeed * i*2/3 - frequencyShift), (rotorSpeed * i*2/3 + frequencyShift)));
+            Temp += loosenessAccumulo.get(i-1).getY();
+        }
+        Temp /= loosenessAccumulo.isEmpty() ? 1 : postResult.size();
+        return new data(
+                "Looseness fault state : " + loosenessAccumulo.size() + "-----> ", Temp*powerCoefficientConfiguration/powerConfiguration);
+    }
+
+    /*-------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
     public DataPoint getMaxAnalyse(@NonNull List<DataPoint> dataIn, double low, double  high) {
         DataPoint dataPoint = new DataPoint(0.0,0.0);
         for (DataPoint data : dataIn)
-            if (data.getX() >= low)
-                if (data.getX() <= high)
-                    if (dataPoint.getY() < data.getY())
+            if (data.getX() >= low && data.getX() <= high && dataPoint.getY() < data.getY())
                         dataPoint = data;
         return dataPoint;
     }
-
 
     /*-------------------------------------------------------------------------------------get all frequency pic-----------------------------------------------------------*/
     public List<DataPoint> findSignificantPeaks(List<Double> dataList, double threshold, double significanceThreshold) {

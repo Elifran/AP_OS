@@ -68,12 +68,7 @@ public class BlankFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 mListener.clearData();
-                // Remplacer FragmentA par FragmentB
-                MenuFragment menu_fragment = new MenuFragment();
-                FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-                transaction.replace(R.id.fragmentContainer, menu_fragment);
-                transaction.addToBackStack(null);  // Permet de revenir en arrière
-                transaction.commit();
+                openSetting();
             }
         });
     }
@@ -93,6 +88,15 @@ public class BlankFragment extends Fragment {
     }
     public interface clearDataAnalyse {
         void clearData();
+    }
+
+    private void openSetting(){
+        // Remplacer le fragment
+        MenuFragment menu_fragment = new MenuFragment();
+        FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragmentContainer, menu_fragment);
+        transaction.addToBackStack("false");  // Permet de revenir en arrière
+        transaction.commit();
     }
 
 }

@@ -42,7 +42,8 @@ public class MenuFragment extends Fragment {
     private FloatingActionButton setting_button;
     private Button confirm_button, track_button;
     private Switch SW1,SW2,SW3,SW4,SW5,SW6;
-    private EditText RPM,POWER,BEARING,NOISE,POWERCOEFFICIENT,LAG, THRESHOLD,INFLUENCE, RESOLUTION;
+    private EditText RPM,POWER,NOISE,POWERCOEFFICIENT,LAG, THRESHOLD,INFLUENCE, RESOLUTION;
+    private EditText BEARING,BEARINGBALLDIAM,BEARINGPITCH,BEARINGANGLE;
     private String mParam1;
     private String mParam2;
     private boolean[] SwitchValue = new boolean[5];
@@ -51,6 +52,9 @@ public class MenuFragment extends Fragment {
     private int  lagValues,resolutionValue;
     private double thresholdValue, influenceValue;
     private int bearingValue;
+    private double bearingballDiamValue;
+    private double bearingpitchValue;
+    private double bearingangleValue;
     private OnDataChangeListener mListener;
 
     public MenuFragment() {
@@ -89,7 +93,12 @@ public class MenuFragment extends Fragment {
 
         RPM = view.findViewById(R.id.velocity_value);
         POWER = view.findViewById(R.id.power_value);
+
         BEARING = view.findViewById(R.id.bearing_value);
+        BEARINGBALLDIAM = view.findViewById(R.id.bearingBallDiameter_value);
+        BEARINGPITCH = view.findViewById(R.id.bearingPitch_value);
+        BEARINGANGLE = view.findViewById(R.id.bearingAngle_value);
+
         NOISE = view.findViewById(R.id.noise_value);
         POWERCOEFFICIENT = view.findViewById(R.id.powerCoefficient_value);
 
@@ -182,6 +191,10 @@ public class MenuFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 sendData(new data("BEARING",bearingValue));
+                sendData(new data("BEARING PITCH",bearingpitchValue));
+                sendData(new data("BEARING BALL DIAM",bearingballDiamValue));
+                sendData(new data("BEARING ANGLE",bearingangleValue));
+
                 sendData(new data("RPM",rpmValue));
                 sendData(new data("POWER",powerValue));
                 sendData(new data("SWITCH",SwitchValue));
@@ -287,6 +300,66 @@ public class MenuFragment extends Fragment {
                         bearingValue = Integer.parseInt(bearingText); // Convert text to float
                     } catch (NumberFormatException e) {
                         bearingValue = 0;
+                    }
+                }
+            }
+        });
+        BEARINGBALLDIAM.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+            @Override
+            public void afterTextChanged(Editable editable) {
+                String bearingText = BEARINGBALLDIAM.getText().toString(); // Get the text entered in POWER view
+                if (!bearingText.isEmpty()) { // Check if the text is not empty
+                    try {
+                        bearingballDiamValue = Double.parseDouble(bearingText); // Convert text to float
+                    } catch (NumberFormatException e) {
+                        bearingballDiamValue = 0;
+                    }
+                }
+            }
+        });
+        BEARINGPITCH.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+            @Override
+            public void afterTextChanged(Editable editable) {
+                String bearingText = BEARINGPITCH.getText().toString(); // Get the text entered in POWER view
+                if (!bearingText.isEmpty()) { // Check if the text is not empty
+                    try {
+                        bearingpitchValue = Double.parseDouble(bearingText); // Convert text to float
+                    } catch (NumberFormatException e) {
+                        bearingpitchValue = 0;
+                    }
+                }
+            }
+        });
+        BEARINGANGLE.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+            @Override
+            public void afterTextChanged(Editable editable) {
+                String bearingText = BEARINGANGLE.getText().toString(); // Get the text entered in POWER view
+                if (!bearingText.isEmpty()) { // Check if the text is not empty
+                    try {
+                        bearingangleValue = Double.parseDouble(bearingText); // Convert text to float
+                    } catch (NumberFormatException e) {
+                        bearingangleValue = 0;
                     }
                 }
             }
@@ -431,8 +504,15 @@ public class MenuFragment extends Fragment {
                 POWERCOEFFICIENT.setText(String.valueOf(powerCoefficientValue));
             noiseCoefficientValue =(double) mainActivity.getDataMain("NOISE");
                 NOISE.setText(String.valueOf(noiseCoefficientValue));
+
             bearingValue =(int) mainActivity.getDataMain("BEARING");
-            BEARING.setText(String.valueOf(bearingValue));
+                BEARING.setText(String.valueOf(bearingValue));
+            bearingballDiamValue =(double) mainActivity.getDataMain("BEARING BALL DIAM");
+                BEARINGBALLDIAM.setText(String.valueOf(bearingballDiamValue));
+            bearingpitchValue =(double) mainActivity.getDataMain("BEARING PITCH");
+                BEARINGPITCH.setText(String.valueOf(bearingpitchValue));
+            bearingangleValue =(double) mainActivity.getDataMain("BEARING ANGLE");
+                BEARINGANGLE.setText(String.valueOf(bearingangleValue));
 
             resolutionValue =(int) mainActivity.getDataMain("RESOLUTION");
                 RESOLUTION.setText(String.valueOf(resolutionValue));

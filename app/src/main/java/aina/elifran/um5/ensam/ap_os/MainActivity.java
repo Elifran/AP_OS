@@ -64,18 +64,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private static double powerConfiguration = 15;
     private static double powerCoefficientConfiguration = 10E+0;
     private static double noiseCoefficientConfiguration = -140;
-    private int bearingConfiguration = 12;
+    private int bearingBallNumberConfiguration = 12;
+    private double bearingBallDiamConfiguration = 25;
+    private double bearingPitchConfiguration = 5.0;
+    private double bearingAngleConfiguration = Math.PI/3.0;
     private int  lag = 32;
     private double  threshold= 8.0;
     private double  influence= 0.9;
     int analyseBuffer = 2048;
     private double samplingFrequency;
     private double[][] maxFrequency;
-    private filter Xfilterdata;
-    private filter Yfilterdata;
-    private filter Zfilterdata;
-    private static final int filterOrder = 50;
-    private static final double cutOffFrequency = 0.485; // must be less than 0.5
+    private filter xfilterdata;
+    private filter yfilterdata;
+    private filter zfilterdata;
+    private static final int filterOrder = 64;
+    private static final double cutOffFrequencyHigh = 0.485; // must be less than 0.5
+    private static final double cutOffFrequencyLow = 0.000; // must be less than 0.0
     private Handler dofftHandler,doplotHandler,doprintHandler;
     boolean analyseData = false;
 
@@ -144,13 +148,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         last_timestamp = act_timestamp;
 
         if (ready){
-            //data_sensor_array[0][0] = Xfilterdata.filterData(actSensorValues[0]);
-            //data_sensor_array[1][0] = Yfilterdata.filterData(actSensorValues[1]);
-            //data_sensor_array[2][0] = Zfilterdata.filterData(actSensorValues[2]);
+            //data_sensor_array[0][0] = xfilterDataxfilterdata.filterData(actSensorValues[0]);
+            //data_sensor_array[1][0] = yfilterdata.filterData(actSensorValues[1]);
+            //data_sensor_array[2][0] = zfilterdata.filterData(actSensorValues[2]);
 
-            data_sensor_array.get(0).set(0,Xfilterdata.filterData(actSensorValues[0]));
-            data_sensor_array.get(1).set(0,Yfilterdata.filterData(actSensorValues[1]));
-            data_sensor_array.get(2).set(0,Zfilterdata.filterData(actSensorValues[2]));
+            data_sensor_array.get(0).set(0, xfilterdata.filterData(actSensorValues[0]));
+            data_sensor_array.get(1).set(0, yfilterdata.filterData(actSensorValues[1]));
+            data_sensor_array.get(2).set(0, zfilterdata.filterData(actSensorValues[2]));
 
             //var = Math.sqrt(
             //        Math.pow(data_sensor_array[0][0], 2) +
@@ -166,11 +170,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             if (analyseData){ // trying to  analyse the absolute value of the vibration from x,y and z
                 dataAnalyseVar.addData(var,step_time); // asume that we analyse the first vibration data
             }
-            if((    Xfilterdata.isConfigChange(samplingFrequency,cutOffFrequency* samplingFrequency) ||
-                    Yfilterdata.isConfigChange(samplingFrequency,cutOffFrequency* samplingFrequency) ||
-                    Zfilterdata.isConfigChange(samplingFrequency,cutOffFrequency* samplingFrequency) ) && flag){
+            if((    xfilterdata.isConfigChange(samplingFrequency/*, cutOffFrequencyHigh * samplingFrequency*/) ||
+                    yfilterdata.isConfigChange(samplingFrequency/*, cutOffFrequencyHigh * samplingFrequency*/) ||
+                    zfilterdata.isConfigChange(samplingFrequency/*, cutOffFrequencyHigh * samplingFrequency*/) ) && flag){
                 dataAnalyseVar.setConfig("SAMPLING FREQ", samplingFrequency);
-                //Toast.makeText(getApplicationContext(), "Configuration filter Have been Changed", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Configuration filterLP Have been Changed", Toast.LENGTH_LONG).show();
             }
         }
         else {
@@ -183,17 +187,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                 if(counter > data_lenght *1.2){
                     if(!filterStatus){
-                        Xfilterdata = new filter(filterOrder, samplingFrequency,cutOffFrequency*samplingFrequency);
-                        Yfilterdata = new filter(filterOrder, samplingFrequency,cutOffFrequency*samplingFrequency);
-                        Zfilterdata = new filter(filterOrder, samplingFrequency,cutOffFrequency*samplingFrequency);
-                        filterStatus = true;        // avoid recreation of the filter class
+                        xfilterdata = new filter(filterOrder, samplingFrequency, cutOffFrequencyLow *samplingFrequency,cutOffFrequencyHigh *samplingFrequency);
+                        yfilterdata = new filter(filterOrder, samplingFrequency, cutOffFrequencyLow *samplingFrequency,cutOffFrequencyHigh *samplingFrequency);
+                        zfilterdata = new filter(filterOrder, samplingFrequency, cutOffFrequencyLow *samplingFrequency,cutOffFrequencyHigh *samplingFrequency);
+                        filterStatus = true;        // avoid recreation of the filterLP class
                         Toast.makeText(getApplicationContext(), "Filter initialized at Fe :" + samplingFrequency + "Hz", Toast.LENGTH_LONG).show();
 
                         dataAnalyseVar = new dataAnalyse(   analyseBuffer,
                                                             samplingFrequency,
                                                             rpmConfiguration,
                                                             powerConfiguration,
-                                                            bearingConfiguration,
+                                                            bearingBallNumberConfiguration,
+
+                                                            bearingBallDiamConfiguration,
+                                                            bearingPitchConfiguration,
+                                                            bearingAngleConfiguration,
+
                                                             switchConfiguration,
                                                             noiseCoefficientConfiguration,
                                                             powerCoefficientConfiguration,
@@ -204,9 +213,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         dataAnalyseVar.setAnalyseDoneListener(this);
 
                     }
-                    if (    Xfilterdata.isCreated() &&
-                            Yfilterdata.isCreated() &&
-                            Zfilterdata.isCreated()){
+                    if (    xfilterdata.isCreated() &&
+                            yfilterdata.isCreated() &&
+                            zfilterdata.isCreated()){
                         button_param.setText("READY - COLLECT");
                         ready = true;}
                 }
@@ -265,9 +274,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 case "POWER" :
                     powerSetting((double)data.getValue());
                     break;
+
                 case "BEARING" :
-                    bearingSetting((int)data.getValue());
+                case "BEARING PITCH" :
+                case "BEARING BALL DIAM" :
+                case "BEARING ANGLE" :
+                    bearingSetting(data);
                     break;
+
                 case "POWER COEFFICIENT" :
                     powerCoefficientSetting((double)data.getValue());
                     break;
@@ -329,9 +343,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             case "POWER":
                 Value = powerConfiguration;
                 break;
+
             case "BEARING":
-                Value = bearingConfiguration;
+                Value = bearingBallNumberConfiguration;
                 break;
+            case "BEARING PITCH":
+                Value = bearingPitchConfiguration;
+                break;
+            case "BEARING BALL DIAM":
+                Value = bearingBallDiamConfiguration;
+                break;
+            case "BEARING ANGLE":
+                Value = bearingAngleConfiguration;
+                break;
+
             case "POWER COEFFICIENT":
                 Value = powerCoefficientConfiguration;
                 break;
@@ -573,8 +598,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void powerSetting(double powerData){
         powerConfiguration = powerData;
     }
-    private void bearingSetting(int bearingNumber){
-        bearingConfiguration = bearingNumber;
+    private void bearingSetting(Object dataIn){
+        data data = (data) dataIn;
+        switch (data.getId()){
+            case "BEARING":
+                bearingBallNumberConfiguration = (int) data.getValue();
+                break;
+            case "BEARING BALL DIAM":
+                bearingBallDiamConfiguration = (double) data.getValue();
+                break;
+            case "BEARING PITCH":
+                bearingPitchConfiguration = (double) data.getValue();
+                break;
+            case "BEARING ANGLE":
+                bearingAngleConfiguration = (double) data.getValue();
+                break;
+        }
+
     }
 
     private final Runnable  getfftAbs = new Runnable() {
@@ -762,11 +802,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         break;
                     case "powerConfiguration":
                         powerConfiguration = (double) ((float)entry.getValue());
+                        break;
 
+                    case "bearingBallNumberConfiguration":
+                        bearingBallNumberConfiguration = (int)entry.getValue();
                         break;
-                    case "bearingConfiguration":
-                        bearingConfiguration = (int)entry.getValue();
+                    case "bearingPitchConfiguration":
+                        bearingPitchConfiguration = (double)(float)entry.getValue();
                         break;
+                    case "bearingBallDiamConfiguration":
+                        bearingBallDiamConfiguration = (double)(float)entry.getValue();
+                        break;
+                    case "bearingAngleConfiguration":
+                        bearingAngleConfiguration = (double)(float)entry.getValue();
+                        break;
+
                     case "noiseCoefficientConfiguration":
                         noiseCoefficientConfiguration = (double)(float)entry.getValue();
                         break;
@@ -820,7 +870,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         preferences.writePreferences(getApplicationContext(),"rpmConfiguration",rpmConfiguration);
         preferences.writePreferences(getApplicationContext(),"powerConfiguration",powerConfiguration);
-        preferences.writePreferences(getApplicationContext(),"bearingConfiguration",bearingConfiguration);
+
+        preferences.writePreferences(getApplicationContext(),"bearingBallNumberConfiguration", bearingBallNumberConfiguration);
+        preferences.writePreferences(getApplicationContext(),"bearingPitchConfiguration", bearingPitchConfiguration);
+        preferences.writePreferences(getApplicationContext(),"bearingBallDiamConfiguration", bearingBallDiamConfiguration);
+        preferences.writePreferences(getApplicationContext(),"bearingAngleConfiguration", bearingAngleConfiguration);
+
         preferences.writePreferences(getApplicationContext(),"noiseCoefficientConfiguration",noiseCoefficientConfiguration);
         preferences.writePreferences(getApplicationContext(),"powerCoefficientConfiguration",powerCoefficientConfiguration);
 
