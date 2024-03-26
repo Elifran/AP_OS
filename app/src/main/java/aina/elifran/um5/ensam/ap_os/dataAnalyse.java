@@ -46,6 +46,7 @@ public class dataAnalyse {
     List<data> analyseResultData = new ArrayList<>();
     private final Handler analyseHandler;
 
+    private double lineFrequency = 50.0;
     dataAnalyse(int buffer,
                 double sampling_frequency,
                 double rpm_Configuration,
@@ -59,9 +60,10 @@ public class dataAnalyse {
                 double power_Coefficient_Configuration,
                 int lag,
                 Double threshold,
-                Double influence
-
+                Double influence,
+                double line_frequency
                 ) {
+        lineFrequency = line_frequency;
         data_buffer = buffer;
         samplingFrequency = sampling_frequency;
         rpmConfiguration = rpm_Configuration;
@@ -110,6 +112,9 @@ public class dataAnalyse {
                 break;
             case "RPM":
                 rpmConfiguration = (double) Value;
+                break;
+            case "LINE":
+                lineFrequency = (double) Value;
                 break;
             case "POWER COEFFICIENT":
                 powerCoefficientConfiguration = (double) Value;
@@ -216,7 +221,7 @@ public class dataAnalyse {
 
             analyseResultData.clear();
             String ID;
-            ID = " Number of pick frequency ML fond : \n";
+            ID ="Line Freq @ " + lineFrequency + "Hz\n" + "Number of pick frequency ML fond : \n";
             for (DataPoint dataIn: dataFrequencyMultiple){
                 ID += " | @ " + String.valueOf(dataIn.getX()) + String.valueOf(dataIn.getY())+ "\n";
             }
@@ -280,17 +285,20 @@ public class dataAnalyse {
         List<DataPoint> cushionsAccumulo = new ArrayList<>();
         double Temp = 0.0;
         double rotorSpeed = rpmConfiguration/60.0;
-        for (int i = 1; i<postResult.size();i++) {
-            cushionsAccumulo.add(getMaxAnalyse(postResult, (rotorSpeed * i - frequencyShift), (rotorSpeed * i + frequencyShift)));
-            Temp += cushionsAccumulo.get(i).getY();
+        for (int i = 3; i<postResult.size();i++) {
+            DataPoint dataPt = getMaxAnalyse(postResult, (rotorSpeed * i - frequencyShift), (rotorSpeed * i + frequencyShift));
+            if (dataPt.getY() != 0.0 && dataPt.getX() != 0.0)
+                cushionsAccumulo.add(dataPt);
         }
-        Temp /= cushionsAccumulo.isEmpty() ? 1 : postResult.size();
+        for ( DataPoint dataPt : cushionsAccumulo)
+            Temp += dataPt.getY();
+        Temp /= cushionsAccumulo.isEmpty() ? 1 : cushionsAccumulo.size();
 
         return new data("Cushions default State -----> ", Temp * powerCoefficientConfiguration / powerConfiguration);
     }
     private data bearingVibration(List<DataPoint> postResult, List<Double> dataMeasure){
         double rotorSpeed = rpmConfiguration/60.0;
-        boolean bearingFaultStatus = false;
+        boolean bearingFaultStatus = false,BFPIs = false,BSFs = false,BFPOs = false;
         double freqInterval = 10;
         double Bd_Pd_Beta = Math.cos(bearingConfiguration_BetaAngle) * bearingConfiguration_ballsDiameter / bearingConfiguration_PitchiDameter;
         double Pd_Bd = bearingConfiguration_PitchiDameter / bearingConfiguration_ballsDiameter;
@@ -306,41 +314,63 @@ public class dataAnalyse {
         filter dataMeasureCut = new filter(filterOrder,samplingFrequency,BFPO-freqInterval,BFPO+freqInterval);
         for (Double data : dataMeasure)
             dataMesureFiltred.add(dataMeasureCut.filterData(data));
-        for (int i = 1; i<postResult.size();i++)
-            bearingTest.add(getMaxAnalyse(postResult,(BFPO*i-frequencyShift),(BFPO*i +frequencyShift)));
-        for (int i = 1; i<postResult.size();i++)
-            bearingTest.add(getMaxAnalyse(postResult,(BSF*i-frequencyShift),(BSF*i +frequencyShift)));
-        for (int i = 1; i<postResult.size();i++)
-            bearingTest.add(getMaxAnalyse(postResult,(BPFI*i-frequencyShift),(BPFI*i +frequencyShift)));
+
+        for (int i = 1; i<postResult.size();i++) {
+            DataPoint dataPt = (getMaxAnalyse(postResult, (BFPO * i - frequencyShift), (BFPO * i + frequencyShift)));
+            if (dataPt.getY() != 0.0 && dataPt.getX() != 0.0){
+                bearingTest.add(dataPt);
+                BFPOs = true;
+            }
+        }
+        for (int i = 1; i<postResult.size();i++) {
+            DataPoint dataPt= getMaxAnalyse(postResult, (BSF * i - frequencyShift), (BSF * i + frequencyShift));
+            if (dataPt.getY() != 0.0 && dataPt.getX() != 0.0){
+                bearingTest.add(dataPt);
+                BSFs = true;
+            }
+        }
+        for (int i = 1; i<postResult.size();i++) {
+            DataPoint dataPt=getMaxAnalyse(postResult, (BPFI * i - frequencyShift), (BPFI * i + frequencyShift));
+            if (dataPt.getY() != 0.0 && dataPt.getX() != 0.0){
+                bearingTest.add(dataPt);
+                BFPIs = true;
+            }
+        }
         if (!bearingTest.isEmpty())
             bearingFaultStatus = true;
         return new data(
-                "Bearing fault state1 : " +
-                FTF + " | " + BSF +" | " + BFPO + " | " + BPFI + "||" + bearingTest.size() +
-                "-----> ", bearingFaultStatus);
+                "Bearing fault state : \n" + "BSF : " + BSFs + " | " + "BFPO : " + BFPOs + " | " + "BPFI : " +  BFPIs + " || " + bearingTest.size() +
+                        "-----> ", bearingFaultStatus);
 
     }
     private data loosenessVibration(List<DataPoint> postResult){
         List<DataPoint> loosenessAccumulo = new ArrayList<>();
+        boolean loosnessFault =  false;
         double Temp = 0.0;
         double rotorSpeed = rpmConfiguration / 60.0;
-        for (int i = 1; i<postResult.size();i++) {  // internal loosness 1/2,1/3,1.5
-            loosenessAccumulo.add(getMaxAnalyse(postResult, (rotorSpeed * i*1/3 - frequencyShift), (rotorSpeed * i*1/3 + frequencyShift)));
-            Temp += loosenessAccumulo.get(i-1).getY();
+        for (int i = 1; i<postResult.size();i++) {  // internal looseness 1/2,1/3,1.5
+            DataPoint dataPt = getMaxAnalyse(postResult, (rotorSpeed * i*1/3 - frequencyShift), (rotorSpeed * i*1/3 + frequencyShift));
+            if (dataPt.getY() != 0.0 && dataPt.getX() != 0.0)
+                loosenessAccumulo.add(dataPt);
         }
-        for (int i = 0; i<postResult.size();i++) {  // internal loosness 1/2,1/3,1.5
-            loosenessAccumulo.add(getMaxAnalyse(postResult, (rotorSpeed * (i + 1/2) - frequencyShift), (rotorSpeed * (i + 1/2)+ frequencyShift)));
-            Temp += loosenessAccumulo.get(i).getY();
+        for (int i = 0; i<postResult.size();i++) {  // internal looseness 1/2,1/3,1.5
+            DataPoint dataPt = getMaxAnalyse(postResult, (rotorSpeed * (i + 1/2) - frequencyShift), (rotorSpeed * (i + 1/2)+ frequencyShift));
+            if (dataPt.getY() != 0.0 && dataPt.getX() != 0.0)
+                loosenessAccumulo.add(dataPt);
         }
-        for (int i = 1; i<postResult.size();i++) {  // internal loosness 1/2,1/3,1.5
-            loosenessAccumulo.add(getMaxAnalyse(postResult, (rotorSpeed * i*2/3 - frequencyShift), (rotorSpeed * i*2/3 + frequencyShift)));
-            Temp += loosenessAccumulo.get(i-1).getY();
+        for (int i = 1; i<postResult.size();i++) {  // internal looseness 1/2,1/3,1.5
+            DataPoint dataPt = getMaxAnalyse(postResult, (rotorSpeed * i*2/3 - frequencyShift), (rotorSpeed * i*2/3 + frequencyShift));
+            if (dataPt.getY() != 0.0 && dataPt.getX() != 0.0)
+                loosenessAccumulo.add(dataPt);
+        }
+        for (DataPoint dataDt : loosenessAccumulo){
+            Temp += dataDt.getY();
+            loosnessFault =true;
         }
         Temp /= loosenessAccumulo.isEmpty() ? 1 : postResult.size();
         return new data(
-                "Looseness fault state : " + loosenessAccumulo.size() + "-----> ", Temp*powerCoefficientConfiguration/powerConfiguration);
+                "Looseness fault state : " + loosnessFault + "-----> ", Temp*powerCoefficientConfiguration/powerConfiguration);
     }
-
     /*-------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
     public DataPoint getMaxAnalyse(@NonNull List<DataPoint> dataIn, double low, double  high) {
         DataPoint dataPoint = new DataPoint(0.0,0.0);

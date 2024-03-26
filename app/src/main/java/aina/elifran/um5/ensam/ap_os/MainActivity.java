@@ -71,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private int  lag = 32;
     private double  threshold= 8.0;
     private double  influence= 0.9;
+    private double lineFrequency = 50.0;
     int analyseBuffer = 2048;
     private double samplingFrequency;
     private double[][] maxFrequency;
@@ -132,7 +133,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setupView();
         setupButton();
         setConfiguration();
-
             }
     @SuppressLint("SetTextI18n")
     @Override
@@ -208,7 +208,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                                                             powerCoefficientConfiguration,
                                                             lag,
                                                             threshold,
-                                                            influence
+                                                            influence,
+                                                            lineFrequency
                                                             );
                         dataAnalyseVar.setAnalyseDoneListener(this);
 
@@ -300,6 +301,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 case "RESOLUTION" :
                     bufferSetting((int)data.getValue());
                     break;
+                case "LINE" :
+                    lineSetting((double)data.getValue());
+                    break;
                 default:
                     break;
             }
@@ -343,7 +347,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             case "POWER":
                 Value = powerConfiguration;
                 break;
-
             case "BEARING":
                 Value = bearingBallNumberConfiguration;
                 break;
@@ -375,7 +378,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             case "INFLUENCE":
                 Value = influence;
                 break;
-
+            case "LINE":
+                Value = lineFrequency;
+                break;
             default:
                 break;
         }
@@ -594,7 +599,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void influenceSetting(double influenceData){
         influence = influenceData;
     }
-
+    private void lineSetting(double lineData){
+        lineFrequency = lineData;
+    }
     private void powerSetting(double powerData){
         powerConfiguration = powerData;
     }
@@ -832,7 +839,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     case "influence":
                         influence = (double)(float)entry.getValue();
                         break;
-
+                    case "line":
+                        lineFrequency = (double)(float)entry.getValue();
+                        break;
                     case "resolution":
                         analyseBuffer = (int)entry.getValue();
                         break;
@@ -882,6 +891,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         preferences.writePreferences(getApplicationContext(),"lag",lag);
         preferences.writePreferences(getApplicationContext(),"threshold",threshold);
         preferences.writePreferences(getApplicationContext(),"influence",influence);
+
+        preferences.writePreferences(getApplicationContext(),"line",lineFrequency);
 
         preferences.writePreferences(getApplicationContext(),"resolution",analyseBuffer);
         preferences.writePreferences(getApplicationContext(),"resolutionbase",data_lenght);

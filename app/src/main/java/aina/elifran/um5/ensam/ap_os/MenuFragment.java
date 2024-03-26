@@ -42,7 +42,7 @@ public class MenuFragment extends Fragment {
     private FloatingActionButton setting_button;
     private Button confirm_button, track_button;
     private Switch SW1,SW2,SW3,SW4,SW5,SW6;
-    private EditText RPM,POWER,NOISE,POWERCOEFFICIENT,LAG, THRESHOLD,INFLUENCE, RESOLUTION;
+    private EditText RPM,POWER,NOISE,POWERCOEFFICIENT,LAG, THRESHOLD,INFLUENCE, RESOLUTION,LINE;
     private EditText BEARING,BEARINGBALLDIAM,BEARINGPITCH,BEARINGANGLE;
     private String mParam1;
     private String mParam2;
@@ -50,7 +50,7 @@ public class MenuFragment extends Fragment {
     private double rpmValue,powerValue,powerCoefficientValue,noiseCoefficientValue;
 
     private int  lagValues,resolutionValue;
-    private double thresholdValue, influenceValue;
+    private double thresholdValue, influenceValue,lineValue;
     private int bearingValue;
     private double bearingballDiamValue;
     private double bearingpitchValue;
@@ -103,6 +103,7 @@ public class MenuFragment extends Fragment {
         POWERCOEFFICIENT = view.findViewById(R.id.powerCoefficient_value);
 
         RESOLUTION = view.findViewById(R.id.resolution_value);
+        LINE = view.findViewById(R.id.line_value);
 
         LAG = view.findViewById(R.id.lag_value);
         THRESHOLD = view.findViewById(R.id.thershold_value);
@@ -119,7 +120,6 @@ public class MenuFragment extends Fragment {
         onClick();
         onChange();
         setConfiguration();
-
     }
     @Override
     public void onAttach(@NonNull Context context) {
@@ -168,22 +168,17 @@ public class MenuFragment extends Fragment {
     }
     @SuppressLint("ClickableViewAccessibility")
     private void onClick(){
-        setting_button.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch(event.getAction()) {
-                    case MotionEvent.ACTION_UP:
-                        closeSetting();
-                        break;
-                }
-                return true;
-            }
-        });
         track_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 trackData(rpmValue);
                 //closeSetting();
+            }
+        });
+        setting_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                closeSetting();
             }
         });
 
@@ -195,11 +190,14 @@ public class MenuFragment extends Fragment {
                 sendData(new data("BEARING BALL DIAM",bearingballDiamValue));
                 sendData(new data("BEARING ANGLE",bearingangleValue));
 
+                sendData(new data("LINE",lineValue));
+
                 sendData(new data("RPM",rpmValue));
                 sendData(new data("POWER",powerValue));
                 sendData(new data("SWITCH",SwitchValue));
                 sendData(new data("POWER COEFFICIENT",powerCoefficientValue));
                 sendData(new data("NOISE",noiseCoefficientValue));
+
 
                 sendData(new data("RESOLUTION",resolutionValue));
 
@@ -357,7 +355,7 @@ public class MenuFragment extends Fragment {
                 String bearingText = BEARINGANGLE.getText().toString(); // Get the text entered in POWER view
                 if (!bearingText.isEmpty()) { // Check if the text is not empty
                     try {
-                        bearingangleValue = Double.parseDouble(bearingText); // Convert text to float
+                        bearingangleValue = Double.parseDouble(bearingText)*2*Math.PI/360; // Convert text to float
                     } catch (NumberFormatException e) {
                         bearingangleValue = 0;
                     }
@@ -420,6 +418,26 @@ public class MenuFragment extends Fragment {
                         resolutionValue = Integer.parseInt(resText); // Convert text to float
                     } catch (NumberFormatException e) {
                         resolutionValue = 0;
+                    }
+                }
+            }
+        });
+        LINE.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+            @Override
+            public void afterTextChanged(Editable editable) {
+                String lineText = LINE.getText().toString(); // Get the text entered in POWER view
+                if (!lineText.isEmpty()) { // Check if the text is not empty
+                    try {
+                        lineValue = Double.parseDouble(lineText); // Convert text to float
+                    } catch (NumberFormatException e) {
+                        lineValue = 60.0;
                     }
                 }
             }
@@ -511,11 +529,12 @@ public class MenuFragment extends Fragment {
                 BEARINGBALLDIAM.setText(String.valueOf(bearingballDiamValue));
             bearingpitchValue =(double) mainActivity.getDataMain("BEARING PITCH");
                 BEARINGPITCH.setText(String.valueOf(bearingpitchValue));
-            bearingangleValue =(double) mainActivity.getDataMain("BEARING ANGLE");
+            bearingangleValue =(double) mainActivity.getDataMain("BEARING ANGLE") * 360/(2*Math.PI) ;
                 BEARINGANGLE.setText(String.valueOf(bearingangleValue));
-
             resolutionValue =(int) mainActivity.getDataMain("RESOLUTION");
                 RESOLUTION.setText(String.valueOf(resolutionValue));
+            lineValue  =(double) mainActivity.getDataMain("LINE");
+                LINE.setText(String.valueOf(lineValue));
 
             lagValues =(int) mainActivity.getDataMain("LAG");
                 LAG.setText(String.valueOf(lagValues));

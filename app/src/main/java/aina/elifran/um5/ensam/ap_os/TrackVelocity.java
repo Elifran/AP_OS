@@ -1,5 +1,6 @@
 package aina.elifran.um5.ensam.ap_os;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 
@@ -13,11 +14,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.RelativeLayout;
 
 import com.jjoe64.graphview.series.DataPoint;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,7 +39,6 @@ public class TrackVelocity extends Fragment{
     private String mParam2;
 
     static boolean viewCreated = false;
-    private static RelativeLayout layout1,layout2,layout3;
     private static Button l1B1,l1B2,l1B3,l1B4,l1B5;
     private static Button l2B1,l2B2,l2B3,l2B4,l2B5;
     private static Button l3B1,l3B2,l3B3,l3B4,l3B5;
@@ -84,9 +84,6 @@ public class TrackVelocity extends Fragment{
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        layout1 = view.findViewById(R.id.layout1);
-        layout2 = view.findViewById(R.id.layout1);
-        layout3 = view.findViewById(R.id.layout1);
         l1B1 = view.findViewById(R.id.layout1_button1);
         l1B2 = view.findViewById(R.id.layout1_button2);
         l1B3 = view.findViewById(R.id.layout1_button3);
@@ -107,88 +104,24 @@ public class TrackVelocity extends Fragment{
         viewCreated = true;
     }
     public void buttonConfiguration(){
-        l1B1.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                velocitySelected(((Button) view).getText().toString());
-            }
-        });
-        l1B2.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                velocitySelected(((Button) view).getText().toString());
-            }
-        });
-        l1B3.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                velocitySelected(((Button) view).getText().toString());
-            }
-        });
-        l1B4.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                velocitySelected(((Button) view).getText().toString());
-            }
-        });
-        l1B5.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                velocitySelected(((Button) view).getText().toString());
-            }
-        });
+        l1B1.setOnClickListener(view -> velocitySelected(((Button) view).getText().toString()));
+        l1B2.setOnClickListener(view -> velocitySelected(((Button) view).getText().toString()));
+        l1B3.setOnClickListener(view -> velocitySelected(((Button) view).getText().toString()));
+        l1B4.setOnClickListener(view -> velocitySelected(((Button) view).getText().toString()));
+        l1B5.setOnClickListener(view -> velocitySelected(((Button) view).getText().toString()));
 
-        l2B1.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                velocitySelected(((Button) view).getText().toString());
-            }
-        });
-        l2B2.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                velocitySelected(((Button) view).getText().toString());
-            }
-        });
-        l2B3.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                velocitySelected(((Button) view).getText().toString());
-            }
-        });
-        l2B4.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                velocitySelected(((Button) view).getText().toString());
-            }
-        });
-        l2B5.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                velocitySelected(((Button) view).getText().toString());
-            }
-        });
+        l2B1.setOnClickListener(view -> velocitySelected(((Button) view).getText().toString()));
+        l2B2.setOnClickListener(view -> velocitySelected(((Button) view).getText().toString()));
+        l2B3.setOnClickListener(view -> velocitySelected(((Button) view).getText().toString()));
+        l2B4.setOnClickListener(view -> velocitySelected(((Button) view).getText().toString()));
+        l2B5.setOnClickListener(view -> velocitySelected(((Button) view).getText().toString()));
 
-        l3B1.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                velocitySelected(((Button) view).getText().toString());
-            }
-        });
-        l3B2.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                velocitySelected(((Button) view).getText().toString());
-            }
-        });
-        l3B3.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                velocitySelected(((Button) view).getText().toString());
-            }
-        });
-        l3B4.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                velocitySelected(((Button) view).getText().toString());
-            }
-        });
-        l3B5.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                velocitySelected(((Button) view).getText().toString());
-            }
-        });
-        exit.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                closeSetting(getContext());
-            }
-        });
+        l3B1.setOnClickListener(view -> velocitySelected(((Button) view).getText().toString()));
+        l3B2.setOnClickListener(view -> velocitySelected(((Button) view).getText().toString()));
+        l3B3.setOnClickListener(view -> velocitySelected(((Button) view).getText().toString()));
+        l3B4.setOnClickListener(view -> velocitySelected(((Button) view).getText().toString()));
+        l3B5.setOnClickListener(view -> velocitySelected(((Button) view).getText().toString()));
+        exit.setOnClickListener(view -> closeSetting(getContext()));
     }
     public static void velocityTrackResul(List<List<DataPoint>> returnValue){
         int i = 1;
@@ -215,69 +148,72 @@ public class TrackVelocity extends Fragment{
                 break;
         }
     }
+    @SuppressLint("SetTextI18n")
     private static void putLayout1(List<DataPoint> dataPointList){
         try {
-            l1B1.setText(String.valueOf(dataPointList.get(0).getX()) + "|" + dataPointList.get(0).getY());
+            l1B1.setText((dataPointList.get(0).getX()) + "|" + dataPointList.get(0).getY());
         }catch (Exception e){
             l1B1.setText("Not defined");}
         try {
-            l1B2.setText(String.valueOf(dataPointList.get(1).getX()) + "|" + dataPointList.get(1).getY());
+            l1B2.setText((dataPointList.get(1).getX()) + "|" + dataPointList.get(1).getY());
         }catch (Exception e){
             l1B2.setText("Not defined");}
         try {
-            l1B3.setText(String.valueOf(dataPointList.get(2).getX()) + "|" + dataPointList.get(2).getY());
+            l1B3.setText((dataPointList.get(2).getX()) + "|" + dataPointList.get(2).getY());
         }catch (Exception e){
             l1B3.setText("Not defined");}
         try {
-            l1B4.setText(String.valueOf(dataPointList.get(3).getX()) + "|" + dataPointList.get(3).getY());
+            l1B4.setText((dataPointList.get(3).getX()) + "|" + dataPointList.get(3).getY());
         }catch (Exception e){
             l1B4.setText("Not defined");}
         try {
-            l1B5.setText(String.valueOf(dataPointList.get(4).getX()) + "|" + dataPointList.get(4).getY());
+            l1B5.setText((dataPointList.get(4).getX()) + "|" + dataPointList.get(4).getY());
         }catch (Exception e){
             l1B4.setText("Not defined");}
     }
+    @SuppressLint("SetTextI18n")
     private static void putLayout2(List<DataPoint> dataPointList){
         try {
-            l2B1.setText(String.valueOf(dataPointList.get(0).getX()) + "|" + dataPointList.get(0).getY());
+            l2B1.setText((dataPointList.get(0).getX()) + "|" + dataPointList.get(0).getY());
         }catch (Exception e){
             l2B1.setText("Not defined");}
         try {
-            l2B2.setText(String.valueOf(dataPointList.get(1).getX()) + "|" + dataPointList.get(1).getY());
+            l2B2.setText((dataPointList.get(1).getX()) + "|" + dataPointList.get(1).getY());
         }catch (Exception e){
             l2B2.setText("Not defined");}
         try {
-            l2B3.setText(String.valueOf(dataPointList.get(2).getX()) + "|" + dataPointList.get(2).getY());
+            l2B3.setText((dataPointList.get(2).getX()) + "|" + dataPointList.get(2).getY());
         }catch (Exception e){
             l2B3.setText("Not defined");}
         try {
-            l2B4.setText(String.valueOf(dataPointList.get(3).getX()) + "|" + dataPointList.get(3).getY());
+            l2B4.setText((dataPointList.get(3).getX()) + "|" + dataPointList.get(3).getY());
         }catch (Exception e){
             l2B4.setText("Not defined");}
         try {
-            l2B5.setText(String.valueOf(dataPointList.get(4).getX()) + "|" + dataPointList.get(4).getY());
+            l2B5.setText((dataPointList.get(4).getX()) + "|" + dataPointList.get(4).getY());
         }catch (Exception e){
             l2B4.setText("Not defined");}
     }
+    @SuppressLint("SetTextI18n")
     private static void putLayout3(List<DataPoint> dataPointList){
         try {
-            l3B1.setText(String.valueOf(dataPointList.get(0).getX()) + "|" + dataPointList.get(0).getY());
+            l3B1.setText((dataPointList.get(0).getX()) + "|" + dataPointList.get(0).getY());
         }catch (Exception e){
             l3B1.setText("Not defined");}
         try {
-            l3B2.setText(String.valueOf(dataPointList.get(1).getX()) + "|" + dataPointList.get(1).getY());
+            l3B2.setText((dataPointList.get(1).getX()) + "|" + dataPointList.get(1).getY());
         }catch (Exception e){
             l3B2.setText("Not defined");}
         try {
-            l3B3.setText(String.valueOf(dataPointList.get(2).getX()) + "|" + dataPointList.get(2).getY());
+            l3B3.setText((dataPointList.get(2).getX()) + "|" + dataPointList.get(2).getY());
         }catch (Exception e){
             l3B3.setText("Not defined");}
         try {
-            l3B4.setText(String.valueOf(dataPointList.get(3).getX()) + "|" + dataPointList.get(3).getY());
+            l3B4.setText((dataPointList.get(3).getX()) + "|" + dataPointList.get(3).getY());
         }catch (Exception e){
             l3B4.setText("Not defined");}
         try {
-            l3B5.setText(String.valueOf(dataPointList.get(4).getX()) + "|" + dataPointList.get(4).getY());
+            l3B5.setText((dataPointList.get(4).getX()) + "|" + dataPointList.get(4).getY());
         }catch (Exception e){
             l3B4.setText("Not defined");}
     }
@@ -288,18 +224,19 @@ public class TrackVelocity extends Fragment{
         Pattern pattern = Pattern.compile("^([\\d.-]+)\\|");
         Matcher velocityText = pattern.matcher(selectedVelocity);
         if (velocityText.find()) {
-            velocity = Double.parseDouble(velocityText.group(1));
+            velocity = Double.parseDouble(Objects.requireNonNull(velocityText.group(1)));
         } else {
             velocity = Double.NaN;
         }
 
         MainActivity myActivity = (MainActivity) getActivity();
+        assert myActivity != null;
         myActivity.getFromTracking(velocity);
         closeSetting(getContext());
     }
 
     private void closeSetting(Context context) {
-        // Remplacer le fragment
+        // Replace the fragment
         TrackVelocity velocityFragment = (TrackVelocity) ((AppCompatActivity) context).getSupportFragmentManager().findFragmentById(R.id.fragmentContainerVelocity);
         if (velocityFragment != null) {
             // Begin the transaction
