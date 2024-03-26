@@ -777,7 +777,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             for (Integer Val : res) {
                 if (Val == 1) {
                     cnt++;
-                    //analyse_result.append("@ : " + cnt1*samplingFrequency/(2*res.size()) + "\n");
+                    analyse_result.append("@ : " + cnt1*samplingFrequency/(2*res.size()) + "\n");
                 }
                 cnt1++;
             }

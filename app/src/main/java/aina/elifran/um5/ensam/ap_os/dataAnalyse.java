@@ -276,8 +276,7 @@ public class dataAnalyse {
 
     }
     private data electricalVibration(List<DataPoint> postResult){
-        double freqCentred =  50.0;
-        DataPoint data1 = getMaxAnalyse(postResult, freqCentred - frequencyShift, freqCentred + frequencyShift);
+        DataPoint data1 = getMaxAnalyse(postResult, lineFrequency - frequencyShift, lineFrequency + frequencyShift);
         return new data("Bobine State --------------> @ " + data1.getX() + ": ", data1.getY());
 
     }
