@@ -23,7 +23,7 @@ public class dataAnalyse {
     private double powerCoefficientConfiguration;  // the vibration amplitude coefficient
     private double noiseCoefficientConfiguration; // frequency outside the noise
     private final double coeffValue = 1; // frequency pic identification
-    private final double frequencyShift = 2.0E-1;
+    private final double frequencyShift = 1.0E-1;
     private final int filterOrder = 50;
     private int lag;
     private Double threshold;
