@@ -355,7 +355,7 @@ public class MenuFragment extends Fragment {
                 String bearingText = BEARINGANGLE.getText().toString(); // Get the text entered in POWER view
                 if (!bearingText.isEmpty()) { // Check if the text is not empty
                     try {
-                        bearingangleValue = Double.parseDouble(bearingText)*2*Math.PI/360; // Convert text to float
+                        bearingangleValue =Double.parseDouble(bearingText)*2*Math.PI/360.0 ; // Convert text to float
                     } catch (NumberFormatException e) {
                         bearingangleValue = 0;
                     }
@@ -529,8 +529,8 @@ public class MenuFragment extends Fragment {
                 BEARINGBALLDIAM.setText(String.valueOf(bearingballDiamValue));
             bearingpitchValue =(double) mainActivity.getDataMain("BEARING PITCH");
                 BEARINGPITCH.setText(String.valueOf(bearingpitchValue));
-            bearingangleValue =(double) mainActivity.getDataMain("BEARING ANGLE") * 360/(2*Math.PI) ;
-                BEARINGANGLE.setText(String.valueOf(bearingangleValue));
+            bearingangleValue =(double) mainActivity.getDataMain("BEARING ANGLE") ;
+                BEARINGANGLE.setText(String.valueOf(bearingangleValue * 360/(2.0*Math.PI)));
             resolutionValue =(int) mainActivity.getDataMain("RESOLUTION");
                 RESOLUTION.setText(String.valueOf(resolutionValue));
             lineValue  =(double) mainActivity.getDataMain("LINE");
