@@ -46,24 +46,24 @@ Before doing whatether, configure the app first, to do that, follow the instruct
 
 3. Type your configuration like the following description
 
-- Resolution `0 - ...` : This is how the output signal can or can't have a good differentiation between two signals.
-- Line frequency `default 50.0Hz` : This defines your power line frequency for the alternating line. If it's a DC motor, this is useless.
-- Switch selector : Select the fault that needs to be identified on the machine. There are 6 options that you can select (all, some, or none of them).
-- Machine power : The power of the machine, defined in kW.
-- Power Coefficient : Through the power machine, it will define a constant power machine over power vibration.
-- Machine RPM : The velocity of the machine in rotations per minute. This can be written as an approximate value, then can be tracked by clicking on the `track` button.
-- Bearing Specifications
-  - Ball Number : The ball number refers to the quantity of balls contained within the bearing. It plays a critical role in determining the load-carrying capacity and performance characteristics of the bearing.
-  - Bearing Ball Diameter : The bearing ball diameter indicates the size of the individual balls within the bearing. This dimension significantly influences factors such as load capacity, stiffness, and rotational speed capability of the bearing.
-  - Pitch Diameter : The pitch diameter of a bearing is a theoretical dimension used for calculating the geometry of bearing components. It represents the diameter where the contact between the balls and the races occurs.
-  - Bearing Angle Presentation : The bearing angle presentation refers to the angle at which the bearing balls make contact with the races. This angle affects the bearing's load capacity, stiffness, and operational behavior.
-> **Note:** Please refer to specific documentation or technical specifications for detailed information on these bearing parameters in the context of your machine.
-- Noise Coefficient : Refers to the noise/blank noise present in your output (can be seen in the graph).
-- Analyse performances variables
-  - Coefficient `16 - 256` : Refers to the number of points for the calculation of the statistics to get the frequency element. The bigger this value, the better the statistics, but it will decrease the power detection (variance - Average).
-  - Threshold coefficient `AVG 8` : The value that the signal needs to have to identify as a peak element.
-  - Influence `0 - 1`: Element to be set to determine the influence of the actual signal on the previous signal. If it's 0, the actual signal has no influence on the previous signal, and if it's 1, the actual signal has full influence on the previous.
-- **CONFIRM BUTTON** : Save all the configurations set.
+    - Resolution `0 - ...` : This is how the output signal can or can't have a good differentiation between two signals.
+    - Line frequency `default 50.0Hz` : This defines your power line frequency for the alternating line. If it's a DC motor, this is useless.
+    - Switch selector : Select the fault that needs to be identified on the machine. There are 6 options that you can select (all, some, or none of them).
+    - Machine power : The power of the machine, defined in kW.
+    - Power Coefficient : Through the power machine, it will define a constant power machine over power vibration.
+    - Machine RPM : The velocity of the machine in rotations per minute. This can be written as an approximate value, then can be tracked by clicking on the `track` button.
+    - Bearing Specifications
+      - Ball Number : The ball number refers to the quantity of balls contained within the bearing. It plays a critical role in determining the load-carrying capacity and performance characteristics of the bearing.
+      - Bearing Ball Diameter : The bearing ball diameter indicates the size of the individual balls within the bearing. This dimension significantly influences factors such as load capacity, stiffness, and rotational speed capability of the bearing.
+      - Pitch Diameter : The pitch diameter of a bearing is a theoretical dimension used for calculating the geometry of bearing components. It represents the diameter where the contact between the balls and the races occurs.
+      - Bearing Angle Presentation : The bearing angle presentation refers to the angle at which the bearing balls make contact with the races. This angle affects the bearing's load capacity, stiffness, and operational behavior.
+    > **Note:** Please refer to specific documentation or technical specifications for detailed information on these bearing parameters in the context of your machine.
+    - Noise Coefficient : Refers to the noise/blank noise present in your output (can be seen in the graph).
+    - Analyse performances variables
+      - Coefficient `16 - 256` : Refers to the number of points for the calculation of the statistics to get the frequency element. The bigger this value, the better the statistics, but it will decrease the power detection (variance - Average).
+      - Threshold coefficient `AVG 8` : The value that the signal needs to have to identify as a peak element.
+      - Influence `0 - 1`: Element to be set to determine the influence of the actual signal on the previous signal. If it's 0, the actual signal has no influence on the previous signal, and if it's 1, the actual signal has full influence on the previous.
+    - **CONFIRM BUTTON** : Save all the configurations set.
 
 4. Get the information
    After saving the setting, push the **BEGIN** button to see the time and frequency representation of the signal from the sensor. In this state, you can define manually what are the defaults in the machine when you see the frequency signal. If the signal is truncated or stopped in the middle of the screen, close the app and reopen it, and wait until the filter is initialized and re-push the **BEGIN** button.
