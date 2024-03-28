@@ -216,7 +216,6 @@ public class dataAnalyse {
                 Log.d("HashMapContent", key + ": " + listAsString);
             }
             List<DataPoint> dataFrequencyMultiple = dataFrequencyMultiple(dataFrequencysignificantArray, rpmConfiguration /60.0,frequencyShift);
-
             analyseResultData.clear();
             String ID;
             ID =    "Sampling frequency @ " + samplingFrequency + "Hz\n" +
