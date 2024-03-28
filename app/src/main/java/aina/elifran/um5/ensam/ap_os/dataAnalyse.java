@@ -265,18 +265,17 @@ public class dataAnalyse {
     private data staticVibration(List<DataPoint> postResult){
         double freqCentred = rpmConfiguration/60.0;
         DataPoint data1 = getMaxAnalyse(postResult, freqCentred - frequencyShift, freqCentred + frequencyShift);
-        return new data("Static Vibration State ----> @ " + data1.getX() + ": ", data1.getY());
-
+        return new data("Static Vibration State % ----> @ " + data1.getX() + ": ", data1.getY() * powerCoefficientConfiguration/powerConfiguration);
     }
     private data dynamicVibration(List<DataPoint> postResult){
         double freqCentred = rpmConfiguration * 2.0/60.0;
         DataPoint data1 = getMaxAnalyse(postResult, freqCentred - frequencyShift, freqCentred + frequencyShift);
-        return new data("Dynamic Vibration State ---> @ " + data1.getX() + ": ", data1.getY());
+        return new data("Dynamic Vibration State % ---> @ " + data1.getX() + ": ", data1.getY() * powerCoefficientConfiguration/powerConfiguration);
 
     }
     private data electricalVibration(List<DataPoint> postResult){
         DataPoint data1 = getMaxAnalyse(postResult, lineFrequency - frequencyShift, lineFrequency + frequencyShift);
-        return new data("Bobine State --------------> @ " + data1.getX() + ": ", data1.getY());
+        return new data("Bobine State % --------------> @ " + data1.getX() + ": ", data1.getY() * powerCoefficientConfiguration/powerConfiguration);
 
     }
     private data cushionsVibration(List<DataPoint> postResult){  //
