@@ -18,15 +18,17 @@ The analysis is rooted in detecting the vibrational patterns associated with fau
 
 1. [Description](#Description)
 2. [Instruction](#Instruction)
-3. [Get apk file](#GetApk)
-4. [Use instruction](#UseApk)
-5. [Set Configuration](#SetCong)
-6. [Get source file](#GetSource)
-7. [License](#license)
+    1. [Get apk file](#GetApk)
+    2. [Use instruction](#UseApk)
+    3. [Set Configuration](#SetCong)
+3. [Get source file](#GetSource)
+4. [Contributing](#Contributing)
+5. [License](#License)
 
 ## Instruction <a name="Instruction"></a>
+
 ### Get file.ak <a name="GetApk"></a>
-1. go to the link bellow, and download the file .apk
+1. Go to the link below and download the file `.apk`.
 
 ```
 https://github.com/Elifran/AP_OS/blob/master/app/release/app-release.apk
@@ -37,11 +39,11 @@ or download it directly from here : [Download APK file](https://github.com/Elifr
 2. Install the application in your mobile phone, make sur tha your phone accept the installation from your internal memory
 3. Get started.
 
-### Use the application <a name="Useapk"></a>
+### Use instruction <a name="UseApk"></a>
 Once you install the application, you will be in the main screen. and normally, your phone begin the calibration on your accelerometer sensor.
 NB : some authorisation must be required, like fast hardware reuqest for sensor.
 
-#### Set configuration <a name="SetCong"></a>
+### Set Configuration <a name="SetCong"></a>
 Before doing whatether, configure the app first, to do that, follow the instruction bellow
 1. Wait :
    if the aff is oppened, wait until the pup-pop mesage `filter ...`appear.
@@ -86,7 +88,7 @@ Before doing whatether, configure the app first, to do that, follow the instruct
 > **RESULT :** Actually, the result must appear, and the defaults must be identified.
 
    
-## Get source file<a name="GetSource"></a>
+## Get source file <a name="GetSource"></a>
 
 To get and set up this project, follow these steps:
 
@@ -102,7 +104,7 @@ To get and set up this project, follow these steps:
 
 4. Build and Run: After the project sync is complete, you can build and run the project on your Android device or emulator.
 
-### Contributing
+## Contributing <a name="Contributing"></a>
 
 Contributions are welcome! If you would like to contribute to this project, please follow these guidelines:
 
@@ -112,6 +114,6 @@ Contributions are welcome! If you would like to contribute to this project, plea
 4. Push to the branch: `git push origin feature/my-feature`.
 5. Submit a pull request.
 
-## License
+## License <a name="License"></a
 
 This project is licensed under the [No License](LICENSE).
