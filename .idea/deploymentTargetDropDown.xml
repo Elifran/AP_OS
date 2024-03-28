@@ -16,7 +16,17 @@
             </Target>
           </targetSelectedWithDropDown>
           <timeTargetWasSelectedWithDropDown value="2024-03-26T15:40:25.970472400Z" />
+          <multipleDevicesSelectedInDropDown value="true" />
           <targetsSelectedWithDialog>
+            <Target>
+              <type value="QUICK_BOOT_TARGET" />
+              <deviceKey>
+                <Key>
+                  <type value="VIRTUAL_DEVICE_PATH" />
+                  <value value="C:\Users\fidel\.android\avd\Nexus_9_API_22.avd" />
+                </Key>
+              </deviceKey>
+            </Target>
             <Target>
               <type value="QUICK_BOOT_TARGET" />
               <deviceKey>
