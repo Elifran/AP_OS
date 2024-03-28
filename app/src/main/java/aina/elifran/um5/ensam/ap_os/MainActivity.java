@@ -427,8 +427,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
     }
-    private void initList(int lenght){
-        data_lenght = lenght;
+    private void initList(int length){
+        data_lenght = length;
         try {
             data_sensor_array.clear();
             data_fft_array.clear();

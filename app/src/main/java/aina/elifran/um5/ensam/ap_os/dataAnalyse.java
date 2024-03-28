@@ -168,8 +168,6 @@ public class dataAnalyse {
         return analyseStatus;
     }
 
-    ;
-
     /*----------------------------------------------------------------------------- adding data -----------------------------------------------------------------------*/
     public void addData(double data, long timeStamp) { // insert data to the buffer befor analyse
         shiftRight(dataMeasureArray, dataTimeArray, data, timeStamp);
@@ -221,7 +219,9 @@ public class dataAnalyse {
 
             analyseResultData.clear();
             String ID;
-            ID ="Line Freq @ " + lineFrequency + "Hz\n" + "Number of pick frequency ML fond : \n";
+            ID =    "Sampling frequency @ " + samplingFrequency + "Hz\n" +
+                    "Line Freq @ " + lineFrequency + "Hz\n" +
+                    "Number of pick frequency ML fond : \n";
             for (DataPoint dataIn: dataFrequencyMultiple){
                 ID += " | @ " + String.valueOf(dataIn.getX()) + String.valueOf(dataIn.getY())+ "\n";
             }
@@ -348,7 +348,7 @@ public class dataAnalyse {
         if (!bearingTest.isEmpty())
             bearingFaultStatus = true;
         return new data(
-                "Bearing fault state : \n" + "FTF : " + FTFs + "BSF : " + BSFs + " | " + "BFPO : " + BFPOs + " | " + "BPFI : " +  BFPIs + " || " + bearingTest.size() +
+                "Bearing fault state : \n" + "FTF : " + FTFs + "| BSF : " + BSFs + " | BFPO : " + BFPOs + " | BPFI : " +  BFPIs + " || " + bearingTest.size() +
                         "-----> ", bearingFaultStatus);
 
     }
