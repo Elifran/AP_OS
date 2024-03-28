@@ -9,20 +9,23 @@
 - **Department:** Electrical Engineering
 
     
-## Description
+## Description <a name="Description"></a>
 
 This project focuses on analyzing the vibrational signals emitted by rotating machines to gain insights into their health conditions. 
 The analysis is rooted in detecting the vibrational patterns associated with faults that occur when machines experience malfunctions.
 
 ## Table of Contents
 
-1. [Installation](#Description)
+1. [Description](#Description)
 2. [Instruction](#Instruction)
-3. [Get source file](#GetSource)
-4. [License](#license)
+3. [Get apk file](#GetApk)
+4. [Use instruction](#UseApk)
+5. [Set Configuration](#SetCong)
+6. [Get source file](#GetSource)
+7. [License](#license)
 
-## Instruction
-### Get file.ak
+## Instruction <a name="Instruction"></a>
+### Get file.ak <a name="GetApk"></a>
 1. go to the link bellow, and download the file .apk
 
 ```
@@ -34,11 +37,11 @@ or download it directly from here : [Download APK file](https://github.com/Elifr
 2. Install the application in your mobile phone, make sur tha your phone accept the installation from your internal memory
 3. Get started.
 
-### Use the application
+### Use the application <a name="Useapk"></a>
 Once you install the application, you will be in the main screen. and normally, your phone begin the calibration on your accelerometer sensor.
 NB : some authorisation must be required, like fast hardware reuqest for sensor.
 
-#### Set configuration
+#### Set configuration <a name="SetCong"></a>
 Before doing whatether, configure the app first, to do that, follow the instruction bellow
 1. Wait :
    if the aff is oppened, wait until the pup-pop mesage `filter ...`appear.
@@ -83,7 +86,7 @@ Before doing whatether, configure the app first, to do that, follow the instruct
 > **RESULT :** Actually, the result must appear, and the defaults must be identified.
 
    
-## Get source file<a name="getSource"></a>
+## Get source file<a name="GetSource"></a>
 
 To get and set up this project, follow these steps:
 
