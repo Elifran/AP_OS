@@ -16,19 +16,20 @@ The analysis is rooted in detecting the vibrational patterns associated with fau
 
 ## Table of Contents
 
-1. [Installation](#Installation)
-2. [Usage](#usage)
-3. [Contributing](#contributing)
+1. [Installation](#Description)
+2. [Instruction](#Instruction)
+3. [Get source file](#Get source file)
 4. [License](#license)
 
-## Intruction of use
+## Instruction
 ### Get file.ak
-1. go to the link bellow, and dowload the file .apk
+1. go to the link bellow, and download the file .apk
 
 ```
 https://github.com/Elifran/AP_OS/blob/master/app/release/app-release.apk
 ```
-or dowload it directly from here : [Download APK file](https://github.com/Elifran/AP_OS/raw/master/app/release/app-release.apk)
+
+or download it directly from here : [Download APK file](https://github.com/Elifran/AP_OS/raw/master/app/release/app-release.apk)
 
 2. Install the application in your mobile phone, make sur tha your phone accept the installation from your internal memory
 3. Get started.
@@ -82,7 +83,7 @@ Before doing whatether, configure the app first, to do that, follow the instruct
 > **RESULT :** Actually, the result must appear, and the defaults must be identified.
 
    
-## Get source file and ///
+## Get source file 
 ### Installation
 
 To get and set up this project, follow these steps:
@@ -92,7 +93,6 @@ To get and set up this project, follow these steps:
     ```
     git clone https://github.com/Elifran/AP_OS
     ```
-    
 
 2. Open the Project in Android Studio: After cloning the repository, navigate to the directory where it was cloned (`AP_OS`), then open Android Studio. Select `Open an Existing Project`, navigate to the `AP_OS` directory, and select it. Android Studio will then open the project.
 

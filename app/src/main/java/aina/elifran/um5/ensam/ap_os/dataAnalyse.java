@@ -297,12 +297,12 @@ public class dataAnalyse {
     }
     private data bearingVibration(List<DataPoint> postResult, List<Double> dataMeasure){
         double rotorSpeed = rpmConfiguration/60.0;
-        boolean bearingFaultStatus = false,BFPIs = false,BSFs = false,BFPOs = false;
+        boolean bearingFaultStatus = false,BFPIs = false,BSFs = false,BFPOs = false, FTFs = false;
         double freqInterval = 10;
         double Bd_Pd_Beta = Math.cos(bearingConfiguration_BetaAngle) * bearingConfiguration_ballsDiameter / bearingConfiguration_PitchiDameter;
         double Pd_Bd = bearingConfiguration_PitchiDameter / bearingConfiguration_ballsDiameter;
 
-        double FTF = 0.5 * rotorSpeed * (1 - Pd_Bd);
+        double FTF = 0.5 * rotorSpeed * (1 - Bd_Pd_Beta);
         double BSF = 0.5 * rotorSpeed * Pd_Bd * (1 - Math.pow(Bd_Pd_Beta, 2));
         double BFPO = 0.5  * rotorSpeed * bearingConfiguration_ballsNumber * (1 - Bd_Pd_Beta);
         double BPFI = 0.5 * rotorSpeed * bearingConfiguration_ballsNumber * (1 + Bd_Pd_Beta);
@@ -314,6 +314,13 @@ public class dataAnalyse {
         for (Double data : dataMeasure)
             dataMesureFiltred.add(dataMeasureCut.filterData(data));
 
+        for (int i = 1; i<postResult.size();i++) {
+            DataPoint dataPt = (getMaxAnalyse(postResult, (FTF * i - frequencyShift), (FTF * i + frequencyShift)));
+            if (dataPt.getY() != 0.0 && dataPt.getX() != 0.0){
+                bearingTest.add(dataPt);
+                FTFs = true;
+            }
+        }
         for (int i = 1; i<postResult.size();i++) {
             DataPoint dataPt = (getMaxAnalyse(postResult, (BFPO * i - frequencyShift), (BFPO * i + frequencyShift)));
             if (dataPt.getY() != 0.0 && dataPt.getX() != 0.0){
@@ -338,7 +345,7 @@ public class dataAnalyse {
         if (!bearingTest.isEmpty())
             bearingFaultStatus = true;
         return new data(
-                "Bearing fault state : \n" + "BSF : " + BSFs + " | " + "BFPO : " + BFPOs + " | " + "BPFI : " +  BFPIs + " || " + bearingTest.size() +
+                "Bearing fault state : \n" + "FTF : " + FTFs + "BSF : " + BSFs + " | " + "BFPO : " + BFPOs + " | " + "BPFI : " +  BFPIs + " || " + bearingTest.size() +
                         "-----> ", bearingFaultStatus);
 
     }
