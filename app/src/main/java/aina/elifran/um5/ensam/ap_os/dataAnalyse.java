@@ -302,10 +302,13 @@ public class dataAnalyse {
         double Bd_Pd_Beta = Math.cos(bearingConfiguration_BetaAngle) * bearingConfiguration_ballsDiameter / bearingConfiguration_PitchiDameter;
         double Pd_Bd = bearingConfiguration_PitchiDameter / bearingConfiguration_ballsDiameter;
 
-        double FTF = 0.5 * rotorSpeed * (1 - Bd_Pd_Beta);
-        double BSF = 0.5 * rotorSpeed * Pd_Bd * (1 - Math.pow(Bd_Pd_Beta, 2));
-        double BFPO = 0.5  * rotorSpeed * bearingConfiguration_ballsNumber * (1 - Bd_Pd_Beta);
-        double BPFI = 0.5 * rotorSpeed * bearingConfiguration_ballsNumber * (1 + Bd_Pd_Beta);
+        //double FTF = 0.5 * rotorSpeed * (1 - Bd_Pd_Beta);
+        double BSF = rotorSpeed * Pd_Bd * (1 - Math.pow(Bd_Pd_Beta, 2));
+        //double BFPO = 0.5  * rotorSpeed * bearingConfiguration_ballsNumber * (1 - Bd_Pd_Beta);
+        //double BPFI = 0.5 * rotorSpeed * bearingConfiguration_ballsNumber * (1 + Bd_Pd_Beta);
+        double FTF = 0.4 * rotorSpeed;
+        double BFPO = 0.4  * rotorSpeed * bearingConfiguration_ballsNumber;
+        double BPFI = 0.6 * rotorSpeed * bearingConfiguration_ballsNumber;
 
         List<DataPoint> bearingTest = new ArrayList<>();
         List<Double> dataMesureFiltred = new ArrayList<>();
