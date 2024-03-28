@@ -18,7 +18,7 @@ The analysis is rooted in detecting the vibrational patterns associated with fau
 
 1. [Installation](#Description)
 2. [Instruction](#Instruction)
-3. [Get source file](#Get source file)
+3. [Get source file](#GetSource)
 4. [License](#license)
 
 ## Instruction
@@ -83,8 +83,7 @@ Before doing whatether, configure the app first, to do that, follow the instruct
 > **RESULT :** Actually, the result must appear, and the defaults must be identified.
 
    
-## Get source file 
-### Installation
+## Get source file<a name="getSource"></a>
 
 To get and set up this project, follow these steps:
 
