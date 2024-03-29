@@ -222,7 +222,7 @@ public class dataAnalyse {
                     "Line Freq @ " + lineFrequency + "Hz\n" +
                     "Number of pick frequency ML fond : \n";
             for (DataPoint dataIn: dataFrequencyMultiple){
-                ID += " | @ " + String.valueOf(dataIn.getX()) + String.valueOf(dataIn.getY())+ "\n";
+                ID +=  String.valueOf(dataIn.getY()) + " | @ " + String.valueOf(dataIn.getX())+ "\n";
             }
             analyseResultData.add(new data(ID, dataFrequencyMultiple.size()));
             ID = "Resolution Level : ";
@@ -366,7 +366,7 @@ public class dataAnalyse {
                 loosenessAccumulo.add(dataPt);
         }
         for (int i = 1; i<postResult.size();i++) {  // internal looseness 1/2,1/3,1.5
-            DataPoint dataPt = getMaxAnalyse(postResult, (rotorSpeed * i*2/3 - frequencyShift), (rotorSpeed * i*2/3 + frequencyShift));
+            DataPoint dataPt = getMaxAnalyse(postResult, (rotorSpeed * i * 2/3 - frequencyShift), (rotorSpeed * i*2/3 + frequencyShift));
             if (dataPt.getY() != 0.0 && dataPt.getX() != 0.0)
                 loosenessAccumulo.add(dataPt);
         }
