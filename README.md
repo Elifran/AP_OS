@@ -31,7 +31,7 @@ The analysis is rooted in detecting the vibrational patterns associated with fau
 1. Go to the link below and download the file `.apk`.
 
 ```
-https://github.com/Elifran/AP_OS/blob/master/app/release/app-release.apk
+https://github.com/Elifran/AP_OS/blob/master/app/release/
 ```
 
 or download it directly from here : [Download APK file](https://github.com/Elifran/AP_OS/raw/master/app/release/app-release.apk)
